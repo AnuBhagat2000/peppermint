@@ -7,7 +7,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    android:textAppearance="?android:attr/textAppearanceMedium"
+    android:textAppearance="?android:attr/textAppearanceSmall"
     tools:context=".MainActivity" >
 
     <LinearLayout
@@ -20,6 +20,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:ellipsize="end"
+            android:hint="@string/leftHint"
             android:maxLines="1" />
 
         <TextView
@@ -27,23 +28,42 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:ellipsize="end"
-            android:maxLines="1" />
+            android:hint="@string/add"
+            android:maxLines="1"
+            android:textIsSelectable="true" />
 
         <EditText
             android:id="@+id/rightOperand"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:ellipsize="end"
+            android:hint="@string/rightHint"
             android:maxLines="1" />
+
+        <TextView
+            android:id="@+id/TextView01"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:hint="@string/equals"
+            android:maxLines="1"
+            android:textIsSelectable="true" />
 
         <TextView
             android:id="@+id/displayAnswer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:ellipsize="end"
-            android:hint="answer"
-            android:maxLines="1" />
+            android:hint="@string/answerHint"
+            android:maxLines="1"
+            android:textIsSelectable="true" />
     </LinearLayout>
+
+    <Spinner
+        android:id="@+id/spinner1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:entries="@array/ops" />
 
     <LinearLayout
         android:layout_width="wrap_content"
