@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">smith calculator</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="subtract">-</string>
+    <string name="add">+</string>
+    <string name="multiply">*</string>
+    <string name="divide">/</string>
+    <string name="answerHint">sum</string>
+    <string name="leftHint">left</string>
+    <string name="rightHint">right</string>
+
+    <string-array name="ops">
+        <item>@string/add</item>
+        <item>@string/subtract</item>
+        <item>@string/multiply</item>
+        <item>@string/divide</item>
+    </string-array>
+    <string name="equals">=</string>
+    <string name="spinnerPrompt"></string>
+    <string name="spinPrompt">choose operation</string>
+
+</resources>
