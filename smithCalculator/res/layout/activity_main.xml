@@ -7,12 +7,13 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    android:textAppearance="?android:attr/textAppearanceSmall"
+    android:textAppearance="?android:attr/textAppearanceLarge"
     tools:context=".SmithCalcMainActivity" >
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_margin="20dip"
         android:orientation="horizontal" >
 
         <EditText
@@ -20,16 +21,16 @@
             android:layout_width="80dp"
             android:layout_height="wrap_content"
             android:hint="@string/leftHint"
-            android:maxLength="24"
+            android:inputType="numberDecimal"
             android:maxLines="1" />
 
         <TextView
             android:id="@+id/operatorView"
-            android:layout_width="wrap_content"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:ellipsize="end"
-            android:hint="@string/add"
             android:maxLines="1"
+            android:text="@string/add"
             android:textIsSelectable="true" />
 
         <EditText
@@ -37,83 +38,101 @@
             android:layout_width="80dp"
             android:layout_height="wrap_content"
             android:hint="@string/rightHint"
+            android:inputType="numberDecimal"
             android:maxLines="1" />
 
         <TextView
             android:id="@+id/TextView01"
-            android:layout_width="wrap_content"
+            android:layout_width="16dp"
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:hint="@string/equals"
             android:maxLines="1"
-            android:textIsSelectable="true" />
+            android:textIsSelectable="true" 
+            android:textAlignment="center"/>
 
         <TextView
             android:id="@+id/displayAnswer"
-            android:layout_width="wrap_content"
+            android:layout_width="80dp"
             android:layout_height="wrap_content"
-            android:ellipsize="end"
             android:hint="@string/answerHint"
             android:maxLines="1"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:textIsSelectable="true" />
     </LinearLayout>
 
-    <Spinner
+    <!--
+         <Spinner
         android:id="@+id/spinner1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:entries="@array/ops"
         android:prompt="@string/spinnerPrompt" />
+    -->
 
-    <LinearLayout
-        android:layout_width="wrap_content"
+    <RelativeLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_margin="20dip"
         android:orientation="horizontal" >
 
-        <Button
-            android:id="@+id/buttonAdd"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_weight="1"
-            android:onClick="onClickOperator"
-            android:text="+" >
-        </Button>
+        <RadioGroup
+            android:id="@+id/radioGroup1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:orientation="vertical" >
 
-        <Button
-            android:id="@+id/buttonSubtract"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_weight="1"
-            android:onClick="onClickOperator"
-            android:text="-" >
-        </Button>
+            <RadioButton
+                android:id="@+id/buttonAdd"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:onClick="onClickOperator"
+                android:text="@string/add" />
 
-        <Button
-            android:id="@+id/buttonMultiply"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_weight="1"
-            android:onClick="onClickOperator"
-            android:text="*" >
-        </Button>
+            <RadioButton
+                android:id="@+id/buttonSubtract"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="onClickOperator"
+                android:text="@string/subtract" />
 
-        <Button
-            android:id="@+id/buttonDivide"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_weight="1"
-            android:onClick="onClickOperator"
-            android:text="/" >
-        </Button>
+            <RadioButton
+                android:id="@+id/buttonMultiply"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="onClickOperator"
+                android:text="@string/multiply" />
+
+            <RadioButton
+                android:id="@+id/buttonDivide"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="onClickOperator"
+                android:text="@string/divide" />
+        </RadioGroup>
 
         <Button
             android:id="@+id/buttonAnswer"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_weight="1"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:layout_alignLeft="@+id/Button01"
+            android:layout_alignParentTop="true"
+            android:onClick="onClear"
+            android:text="@string/clear" />
+
+        <Button
+            android:id="@+id/Button01"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:layout_below="@+id/buttonAnswer"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="20dp"
             android:onClick="onClickAnswer"
-            android:text="=" >
-        </Button>
-    </LinearLayout>
+            android:text="@string/go" />
+
+    </RelativeLayout>
+
 
 </LinearLayout>
