@@ -11,16 +11,21 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
-
-import com.example.spinnerunitconverter.MainActivity.Context.UnitContext;
 
 public class MainActivity extends Activity  implements OnItemSelectedListener{
 	Spinner fromUnitSpinner, toUnitSpinner, unitTypeSpinner;
 	ArrayAdapter<CharSequence> temperatureAdapter, weightAdapter;
 	TextView answerTextField;
 	Context context = null;
+	EditText input = null;
+
+	static private final double  lbsToKG = 0.453592; 
+	static private final double  kgToPounds = 2.20462;
+	static private final double  fToCoffset = 32;
+
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -31,7 +36,7 @@ public class MainActivity extends Activity  implements OnItemSelectedListener{
 		fromUnitSpinner = (Spinner) findViewById(R.id.fromUnit);
 		toUnitSpinner = (Spinner) findViewById(R.id.toUnit);
 		answerTextField = (TextView)findViewById(R.id.answer);
-
+		input = (EditText)findViewById(R.id.inputValue);
 
 		unitTypeSpinner.setOnItemSelectedListener(this);
 		fromUnitSpinner.setOnItemSelectedListener(this);
@@ -48,111 +53,110 @@ public class MainActivity extends Activity  implements OnItemSelectedListener{
 		weightAdapter = ArrayAdapter.createFromResource(this, R.array.weights, android.R.layout.simple_spinner_item);
 		weightAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
-		context = new Context();
-		context.unit = Context.UnitContext.temp;
-		context.from = Context.Unit.degC;
-		context.to = Context.Unit.degF;
+		context = new Context(Context.UnitContext.temperatures, Context.Temperatures.degC.ordinal(), Context.Temperatures.degF.ordinal());
 	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
 	}
 
-	/** GO */
+	/** GO 
+	 * //	Celsius to Fahrenheit (°C × (9/5)) + 32 = °F
+	 * //	Fahrenheit to Celsius 	(°F - 32) * (5/9) = °C
+	 * 
+	 * */
 	public void onClickGoButton(View v){
-		Log.i("onClickGoButton","onClickGoButton");	
-		answerTextField.setText("answ"+Math.random());
+
+		StringBuilder sb = new StringBuilder(input.getText().toString());
+		double value = 0;
+		try {
+			value = Double.parseDouble(input.getText().toString());
+		} catch (Exception ec) {
+			input.setText(R.string.zero);
+		}
+		//Log.i("value text field:",input.getText().toString());
+
+		switch (context.unit) {
+		case temperatures:{
+
+			if (context.from == Context.Temperatures.degC.ordinal()) {
+				sb.append(" degree C = ");
+				sb.append(Double.toString((value * 1.8) + fToCoffset));
+				sb.append(" degree F");
+
+			} else {
+				sb.append(" degree F = ");
+				sb.append(Double.toString((value - fToCoffset) * 0.5555));
+				sb.append(" degree C");
+			}
+			break;
+		}
+		case weights:{
+			if (context.from == Context.Weights.kg.ordinal()){
+				sb.append(" kg = ");
+				sb.append(Double.toString(value * kgToPounds));
+				sb.append(" pounds");
+			} else {
+				sb.append(" pounds = ");
+				sb.append(Double.toString(value * lbsToKG));
+				sb.append(" kg");
+			}
+			break;
+		}
+		}
+		answerTextField.setText(sb.toString());
 	}
 
 	@Override
 	public void onItemSelected(AdapterView<?> parent, View view, int position,long id) {
-		
-		Log.i("onItemSel", "top onItemSelected");
+
 
 		switch (parent.getId()) {
 		case R.id.spinnerUnitType:{
-			Log.i("onItemSel", "");
+
 			String selected = (String) parent.getItemAtPosition(position);
 			if (selected.startsWith("weight")) {
-				Log.i("onItemSel", "selected weight. ");
+				context = new Context(Context.UnitContext.weights, 0, 1);
 				fromUnitSpinner.setAdapter(weightAdapter);
 				toUnitSpinner.setAdapter(weightAdapter);
-
 			} else {
-				Log.i("onItemSel", "selected temp. ");
-
+				context = new Context(Context.UnitContext.temperatures, 0, 1);
 				fromUnitSpinner.setAdapter(temperatureAdapter);
 				toUnitSpinner.setAdapter(temperatureAdapter);
-
 			}
 			fromUnitSpinner.setSelection(0, true);
-			toUnitSpinner.setSelection(0, true);
+			toUnitSpinner.setSelection(1, true);
+			onClickGoButton(null);
 			break;
 		}
 		case R.id.fromUnit: {
+
 			if (context == null) return;
-				if (context.unit == UnitContext.temp) {
-					Log.i("from unit selected:",(String)fromUnitSpinner.getSelectedItem()); // c or f degrees
-					toUnitSpinner.setSelection( ~ fromUnitSpinner.getSelectedItemPosition() , true);
-				} else {
-					Log.i("from unit selected:",(String)fromUnitSpinner.getSelectedItem()); //  kg or pounds
-					toUnitSpinner.setSelection( ~ fromUnitSpinner.getSelectedItemPosition() , true);
-				}
+			toUnitSpinner.setSelection( fromUnitSpinner.getSelectedItemPosition()==0?1:0, true); //toggle
+			context = new Context(context.unit, fromUnitSpinner.getSelectedItemPosition(), toUnitSpinner.getSelectedItemPosition());
+			onClickGoButton(null);
+			break;
+		}
+		case R.id.toUnit: {
+
+			if (context == null) return;
+			fromUnitSpinner.setSelection(toUnitSpinner.getSelectedItemPosition()==0?1:0, true); //toggle
+			context = new Context(context.unit, fromUnitSpinner.getSelectedItemPosition(), toUnitSpinner.getSelectedItemPosition());
+			onClickGoButton(null);
 			break;
 		}
 		default: {
 			raiseAlertDialog("Invalid View id.");
-            break;
+			break;
 		}
 		}
-
-		if (parent.getId() == R.id.spinnerUnitType) {
-			Log.i("onItemSel", "");
-			String selected = (String) parent.getItemAtPosition(position);
-			if (selected.startsWith("weight")) {
-				Log.i("onItemSel", "selected weight. ");
-				fromUnitSpinner.setAdapter(weightAdapter);
-				toUnitSpinner.setAdapter(weightAdapter);
-
-			} else {
-				Log.i("onItemSel", "selected temp. ");
-
-				fromUnitSpinner.setAdapter(temperatureAdapter);
-				toUnitSpinner.setAdapter(temperatureAdapter);
-
-			}
-		} else {
-			if (parent.getId() == R.id.fromUnit) {
-
-				if (context != null) {
-					if (context.unit == UnitContext.temp) {
-						
-						Log.i("from unit selected:",(String)fromUnitSpinner.getSelectedItem()); // c or f degrees
-						toUnitSpinner.setSelection( ~ fromUnitSpinner.getSelectedItemPosition() , true);
-					} else {
-						Log.i("from unit selected:",(String)fromUnitSpinner.getSelectedItem()); //  kg or pounds
-						toUnitSpinner.setSelection( ~ fromUnitSpinner.getSelectedItemPosition() , true);
-					}
-				} else {
-					raiseAlertDialog("Choose a unit first.");
-				}
-			} else if (parent.getId() == R.id.toUnit) {
-			}
-			else {
-				throw new RuntimeException ("invalid ID");
-
-			}
-		}
-
 	}		
 
 	@Override
 	public void onNothingSelected(AdapterView<?> arg0) {
 		// TODO Auto-generated method stub
-
 	}
 
 	private void raiseAlertDialog(String msg){
@@ -172,16 +176,24 @@ public class MainActivity extends Activity  implements OnItemSelectedListener{
 		dialog.show();
 	}
 
-	static final class Context {
-		public  enum UnitContext {wt, temp, unset};
-		public  enum Unit {pounds, kg, degF, degC, unset};
+	private static final class Context {
 
 		UnitContext unit = UnitContext.unset;
-		Unit from = Unit.unset;
-		Unit to = Unit.unset;
+		int from;
+		int to;
+		public  enum UnitContext {temperatures, weights, unset};
+		public  enum Weights {kg,pounds};
+		public  enum Temperatures {degC, degF};
 
-
-
+		public Context (UnitContext c, int from, int to){
+			unit = c;
+			this.from = from;
+			this.to = to;
+		}
+		
+		@Override
+		public  String toString() {
+			return unit.name()+" From:"+Integer.toString(from)+" To:"+Integer.toString(to);
+		}
 	}
-
 }
