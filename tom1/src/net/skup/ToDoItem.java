@@ -1,4 +1,4 @@
-package com.examples.todolist;
+package net.skup;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

@@ -3,16 +3,17 @@
   android:orientation="vertical"
   android:layout_width="fill_parent"
   android:layout_height="fill_parent">
-  <EditText
-    android:id="@+id/myEditText"
+  <TextView
+    android:id="@+id/ongoingLabel"
     android:layout_width="fill_parent" 
     android:layout_height="wrap_content" 
-    android:text="New To Do Item"
-    android:visibility="gone"
+    android:text="Sync Ongoing..."
   />
-  <ListView  
-    android:id="@+id/myListView"
-    android:layout_width="fill_parent" 
+  <Button 
+    android:id="@+id/gobackButton"
+    android:text="Go Back"
+    android:layout_width="wrap_content" 
     android:layout_height="wrap_content" 
+    android:onClick="gobackButtonOnClick"
   />
 </LinearLayout>

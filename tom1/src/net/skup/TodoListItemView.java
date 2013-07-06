@@ -1,4 +1,4 @@
-package com.examples.todolist;
+package net.skup;
 
 import android.content.Context;
 import android.content.res.Resources;

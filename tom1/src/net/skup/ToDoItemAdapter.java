@@ -1,8 +1,9 @@
-package com.examples.todolist;
+package net.skup;
 
 import java.text.SimpleDateFormat;
 import android.content.Context;
 import java.util.*;
+
 import android.view.*;
 import android.widget.*;
 
@@ -45,4 +46,8 @@ public class ToDoItemAdapter extends ArrayAdapter<ToDoItem> {
 
     return todoView;
   }
+  
+
+    
+	
 }
