@@ -2,6 +2,8 @@
 <resources>
 
     <string name="app_name">TomSwifty</string>
-    <string name="action_settings">Settings</string>
+    <string name="sortByLaugh">Sort by Laugh</string>
+    <string name="sortByGroan">Sort by Groan</string>
+    <string name="challenge">Challenge Me</string>
 
 </resources>

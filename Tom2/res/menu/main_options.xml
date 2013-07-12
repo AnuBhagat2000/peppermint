@@ -1,0 +1,14 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/challenge"
+        android:showAsAction="always|withText"
+        android:title="@string/challenge"/>
+    <item
+        android:id="@+id/sort_setting"
+        android:orderInCategory="100"
+        android:showAsAction="always"
+        android:icon="@drawable/facehappy22x22"
+        android:title="@string/sortByGroan"/>
+
+</menu>
