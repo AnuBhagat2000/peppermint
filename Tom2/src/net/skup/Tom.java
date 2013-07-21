@@ -15,34 +15,72 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.AssetFileDescriptor;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnKeyListener;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class Tom extends Activity {
 
 	private ListView mainListView;
+	private ViewGroup editableChallenge;
+	private EditText editablePart;
+	private TextView nonEditablePart;
+
+	private List<Pun> puns ;
+    public static final int CHALLENGE_PUN = R.id.challenge;
 	boolean sortByLaughSetting = true; //vs sort by groan
-    public static final String sortByLaugh = "sortByLaugh";
-    
+	public static final String sortByLaugh = "sortByLaugh";
+	private boolean addingNew = false;
+	private SwiftyAdapter adapter;
+
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		
+
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main_list_view);
 		mainListView = (ListView)findViewById(R.id.listview);
+		editableChallenge = (ViewGroup)findViewById(R.id.editableChallenge);
+		editablePart = (EditText)findViewById(R.id.editTextSubject);
+		nonEditablePart = (TextView)findViewById(R.id.editTextAdverb);
 
-		SharedPreferences settings = getPreferences(0);
-		sortByLaughSetting = settings.getBoolean(sortByLaugh, true);
+
+		/** Finished editing a Challenge. */
+		editablePart.setOnKeyListener(new OnKeyListener() {
+			public boolean onKey(View v, int keyCode, KeyEvent event) {
+				if (event.getAction() == KeyEvent.ACTION_DOWN)
+					if (keyCode == KeyEvent.KEYCODE_ENTER) {
+						cancelAdd();
+
+						Pun finishedPun = (Pun)editableChallenge.getTag(CHALLENGE_PUN);
+						if (finishedPun == null) {
+							finishedPun = new Pun("a","b","c");
+						}
+						finishedPun.setStmt(editablePart.getText().toString());
+					    puns.add(0, finishedPun);
+					    editablePart.setText("");
+						adapter.notifyDataSetChanged();
+						return true; 
+					}
+				return false;
+			}
+		});
 
 		// TODO async
 		StrictMode.ThreadPolicy policy = new StrictMode.
@@ -50,22 +88,20 @@ public class Tom extends Activity {
 		StrictMode.setThreadPolicy(policy); 
 
 
-		InputStream is = getDataWithURL("http://10.0.2.2:8080/sample.json");
+		InputStream is = getDataWithURL("http://tom-swifty.appspot.com/sample.json");//http://10.0.2.2:8080/sample.json");
 		if (true/*is == null*/) {
 			// Could not open sample.json get FileNotFound... cannot be opened is prob a compressed file
 			//http://thedevelopersinfo.com/2009/11/27/using-files-as-raw-resources-in-android/
 			//http://stackoverflow.com/questions/6186866/java-io-filenotfoundexception-this-file-can-not-be-opened-as-a-file-descriptor
-			//InputStream itt = getDataWithFile("sample.json");
-			//			if (itt == null) {
-			//				Log.e(this.getClass().getName(),"could not read from file...");
-			//			}
+						InputStream itt = getDataWithFile("raw/sample.json");
+						if (itt == null) {
+							Log.e(this.getClass().getName(),"could not read from file...");
+						}
 
 		}
-		String json = convertToString(is);
-		final List<Pun> list = getData(json);
-
+		puns = getData(convertToString(is));
 		final ListView listview = (ListView) findViewById(R.id.listview);
-		final SwiftyAdapter adapter = new SwiftyAdapter(this,  list);
+		adapter = new SwiftyAdapter(this,  puns);
 		listview.setAdapter(adapter);
 
 		listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -77,7 +113,7 @@ public class Tom extends Activity {
 				view.animate().setDuration(2000).alpha(0).withEndAction(new Runnable() {
 					@Override
 					public void run() {
-						list.remove(item);
+						puns.remove(item);
 						adapter.notifyDataSetChanged();
 						view.setAlpha(1);
 					}
@@ -110,25 +146,29 @@ public class Tom extends Activity {
 
 		// Handle item selection
 		switch (item.getItemId()) {
-		case R.id.sort_setting:{
+		case R.id.settings:{
 			sortByLaughSetting = !sortByLaughSetting;
-			// todo sort
+			startActivity(new Intent(this, Prefs.class));
 			break;
-			}
+		}
 		case R.id.challenge:{
-			// display new list element
-			break;
-			}
+			SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+			String substituteSubject = sharedPref.getString(getString(R.string.substitueSubjectKey), "Tommy");
+			Log.i("substituteSubject", substituteSubject);
+
+			addChallenge();
+			return true;
+		}
 		default:{
 			return super.onOptionsItemSelected(item);
 		}
 		}
 		return true;
 	}
-	
+
 	@Override
 	protected void onPause() {
-		
+
 		super.onPause();
 		SharedPreferences uiState = getPreferences(0);
 		SharedPreferences.Editor editor = uiState.edit();
@@ -159,6 +199,19 @@ public class Tom extends Activity {
 		return swiftys;
 	}
 
+	private void cancelAdd() {
+		addingNew = false;
+		editableChallenge.setVisibility(View.GONE);
+	}
+	
+	
+
+	private void removeItem(int _index) {
+		puns.remove(_index);
+		adapter.notifyDataSetChanged();  
+	}
+	
+	
 	private InputStream getDataWithFile(String fname) {
 		InputStream iss = null;
 		AssetFileDescriptor descriptor;
@@ -218,4 +271,23 @@ public class Tom extends Activity {
 		}
 		return sb.toString();
 	} 
+	
+	/** 
+	 * Action to create a challenge.
+	 */
+	private void addChallenge() {
+		addingNew = true;
+		editableChallenge.setVisibility(View.VISIBLE);
+		editableChallenge.requestFocus(); 
+		
+		SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+		String substituteSubject = sharedPref.getString(getString(R.string.substitueSubjectKey), "Tommy2");
+		String subj = getString(R.string.substitueSubjectKey)+ " gushed";
+		subj = subj.replace(getString(R.string.substitueSubjectKey), substituteSubject);
+		//fetch a new pun from somewhere
+		Pun newPun = new Pun("		", subj, substituteSubject);
+		editableChallenge.setTag(CHALLENGE_PUN, newPun);// attach the fully defined pun for use after finished editing
+		nonEditablePart.setText(newPun.getAdverb());
+		editablePart.setText(newPun.getStmt());
+	}
 }

@@ -5,10 +5,10 @@
         android:showAsAction="always|withText"
         android:title="@string/challenge"/>
     <item
-        android:id="@+id/sort_setting"
+        android:id="@+id/settings"
         android:orderInCategory="100"
         android:showAsAction="always"
         android:icon="@drawable/facehappy22x22"
-        android:title="@string/sortByGroan"/>
+        android:title="user Name setting"/>
 
 </menu>

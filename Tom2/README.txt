@@ -1,49 +1,52 @@
 
 
-setup data
-============
-ls
-sample.json
-skupunit:assets issmith1$ pwd
-/Users/issmith1/android/peppermint/tom1/assets
-
-ls
-WEB-INF		guestbook.jsp	irene.json	sample.json	stylesheets
-skupunit:war issmith1$ pwd
-/Users/issmith1/stash/appengine-java-sdk-1.8.1.1/demos/guestbook/war
+public class Stack {
 
 
-start web server
-pwd
-/Users/issmith1/stash/appengine-java-sdk-1.8.1.1
-skupunit:appengine-java-sdk-1.8.1.1 issmith1$ ./bin/dev_appserver.sh demos/guestbook/war
+int value;
+Stack next;
+Stack top;
+
+public int getValue() { return value; }
+
+public Stack(int v) {
+  value=v;
+}
+
+public Stack pop() {
+
+ Stack rv = top.next;
+ top = top.next;
+ return rv;
+}
 
 
-Google README
+public void push(int value) {
 
-To run the local development server use:
-    bin\dev_appserver.cmd <your web application>
+Stack temp = top==null? null : top.next;
 
-It will begin listening on port 8080 on the local machine.
 
-Many of the sample applications have Ant build.xml targets that start
-the local runtime environment.
+top = new Stack(value);
+top.next = temp;
 
-Uploading your App to Google
-----------------------------
 
-1) Go to http://appengine.google.com and create your application.
+}
 
-2) Make sure that the application identifier in your appengine-web.xml file
-   matches the one you chose in step 1.
 
-3) Run appcfg to upload your application to deploy your application to
-   Google's Servers:
+public static void main(String []a) {
 
-   From the appengine-java-sdk directory, run:
-     bin\appcfg.cmd update <your web application>
-     bin/appcfg.sh update demos/guestbook/war
 
-this is the URL
-http://tom-swifty.appspot.com/sample.json
-4) Try your application out at:  http://<app-id>.appspot.com
+    Stack stack = new Stack();
+    stack.push(3);
+    System.err.println(stack.pop().getValue());
+
+
+}
+
+
+
+
+
+
+
+}
