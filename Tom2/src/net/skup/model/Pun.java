@@ -4,15 +4,15 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import net.skup.R;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.util.Log;
 
 public class Pun {
 	static public final SimpleDateFormat sdf = new SimpleDateFormat("MM-dd HH:mm", Locale.US);
 
-	
+
 	public enum T {
 		created, author, subject, stmt, adverb
 	}
@@ -22,7 +22,21 @@ public class Pun {
 	private String subject;
 	private String stmt;
 	private String adverb;
-	
+
+	public JSONObject getJSONObject() {
+		JSONObject obj = new JSONObject();
+		try {
+			obj.put(T.created.name(), String.valueOf(createdTimeSeconds));
+			obj.put(T.author.name(), author);
+			obj.put(T.subject.name(), subject);
+			obj.put(T.stmt.name(), stmt);
+			obj.put(T.adverb.name(), adverb);
+		} catch (JSONException e) {
+			Log.e(getClass().getName(), "Pun getJSONObject JSONException: "+e.getMessage());
+		}
+		return obj;
+	}
+
 	/**
 	 * 
 	 * @param creationTimeSeconds - eg "123456789" in seconds
@@ -32,7 +46,7 @@ public class Pun {
 	 * @param subj - the subject eg "Tom"
 	 */
 	public Pun(String creationTimeSeconds, String auth, String statement, String adv, String subj) {
-		   
+
 		createdTimeSeconds =  Long.parseLong(creationTimeSeconds);
 		formattedCreationTime = sdf.format(new Date(createdTimeSeconds * 1000));
 		author = auth;
@@ -41,14 +55,14 @@ public class Pun {
 		subject = subj;
 
 	}
-	
+
 	/**
 	 * Create a pun given a statement (with substitutable subject) and an adverb.  Uses current time and current subject.
 	 * @param statement
 	 * @param adverb
 	 */
 	public Pun(String statement, String adverb, String substituteSubject) {
-		
+
 		createdTimeSeconds = System.currentTimeMillis() / 1000;
 		formattedCreationTime = sdf.format(createdTimeSeconds);
 		this.author = substituteSubject;
@@ -57,13 +71,15 @@ public class Pun {
 		this.adverb = adverb;
 	}
 
+
+
 	public String getCreated() {
 		if (formattedCreationTime == null || formattedCreationTime.isEmpty()) {
 			formattedCreationTime = Long.toString(createdTimeSeconds);
 		}
 		return formattedCreationTime;
 	}
-	
+
 	public long getCreatedTimeSeconds() {
 		if (createdTimeSeconds == -1) {
 			//
@@ -99,5 +115,5 @@ public class Pun {
 	public String getAdverb() {
 		return adverb;
 	}
-	
+
 }

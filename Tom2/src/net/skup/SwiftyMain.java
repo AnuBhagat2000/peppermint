@@ -10,16 +10,17 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.prefs.Preferences;
 
 import net.skup.model.Pun;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.AssetFileDescriptor;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
@@ -52,6 +53,7 @@ public class SwiftyMain extends Activity {
 	public static final String sortByLaugh = "sortByLaugh";
 	private boolean addingNew = false;
 	private SwiftyAdapter adapter;
+	private static final String SWTAG = "swiftys"; //TODO remove from bandwidth
 
 	
 	@Override
@@ -66,25 +68,7 @@ public class SwiftyMain extends Activity {
 
 
 		/** Finished editing a Challenge. */
-		editablePart.setOnKeyListener(new OnKeyListener() {
-			public boolean onKey(View v, int keyCode, KeyEvent event) {
-				if (event.getAction() == KeyEvent.ACTION_DOWN)
-					if (keyCode == KeyEvent.KEYCODE_ENTER) {
-						cancelAdd();
-
-						Pun finishedPun = (Pun)editableChallenge.getTag(CHALLENGE_PUN);
-						if (finishedPun == null) {
-							finishedPun = new Pun("a","b","c");
-						}
-						finishedPun.setStmt(editablePart.getText().toString());
-					    puns.add(0, finishedPun);
-					    editablePart.setText("");
-						adapter.notifyDataSetChanged();
-						return true; 
-					}
-				return false;
-			}
-		});
+		editablePart.setOnKeyListener(finishedChallenge);
 
 		// TODO async
 		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
@@ -92,6 +76,8 @@ public class SwiftyMain extends Activity {
 		
 		InputStream web_is = getDataWithURL("http://tom-swifty.appspot.com/sample.json");//http://10.0.2.2:8080/sample.json");
 		puns2 = getData(convertToString(web_is));
+		//System.err.println("stringify  "+jsonStringify(puns2));
+		postData("http://10.0.2.2:8080/sample33.json", "skupniewicz");
 		
 		InputStream fis = getResources().openRawResource(R.raw.sample);
 		puns = getData(convertToString(fis));
@@ -129,6 +115,22 @@ public class SwiftyMain extends Activity {
 		}); 
 	}
 
+	 @Override
+	 protected void onStop(){
+		 super.onStop();
+
+		 // We need an Editor object to make preference changes.
+		 // All objects are from android.context.Context
+		 SharedPreferences settings = getPreferences( 0);
+		 SharedPreferences.Editor editor = settings.edit();
+		 String sav = jsonStringify(puns);
+		 System.out.println(sav);
+		 editor.putString(SWTAG, sav);
+
+		 // Commit the edits!
+		 editor.commit();
+	 }
+	 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.main_options, menu);
@@ -152,7 +154,7 @@ public class SwiftyMain extends Activity {
 			String substituteSubject = sharedPref.getString(getString(R.string.substitueSubjectKey), "Tommy");
 			Log.i("substituteSubject", substituteSubject);
 
-			addChallenge();
+			startingChallenge();
 			return true;
 		}
 		default:{
@@ -173,14 +175,33 @@ public class SwiftyMain extends Activity {
 		Log.i("onPause","persisting "+sortByLaugh+ " "+sortByLaughSetting);
 	}
 
+	/*
+	 * 
+	 * http://stackoverflow.com/questions/4841952/convert-arraylist-to-jsonarray
+	 */
+	private String jsonStringify(List<Pun> puns)  {
+
+		JSONArray ja = new JSONArray();
+		for (int i=0;i<puns.size();i++) {
+			ja.put(puns.get(i).getJSONObject());
+		}
+
+		JSONObject row = new JSONObject();
+		try {
+			row.put(SWTAG, ja);
+		} catch (JSONException e) {
+			Log.e(getClass().getName(), e.getMessage());
+		}
+		return row.toString();
+	}
+
 	private List<Pun> getData(String data) {
 
 		List<Pun> swiftys = new ArrayList<Pun>();
 		try {
 			JSONObject json = new JSONObject(data);
-
 			// Getting Array of swiftys
-			JSONArray s = json.getJSONArray("swiftys");
+			JSONArray s = json.getJSONArray(SWTAG);
 
 			for (int i = 0; i < s.length(); i++){
 				JSONObject c = s.getJSONObject(i);
@@ -208,21 +229,8 @@ public class SwiftyMain extends Activity {
 	}
 	
 	
-	private InputStream getDataWithFile(String fname) {
-		InputStream iss = null;
-		AssetFileDescriptor descriptor;
 
-		try {
-			descriptor = getAssets().openFd(fname);
-			iss =	descriptor.createInputStream();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		return iss;
-	}
-
-	public void postData(String u, String data) {
+	private void postData(String u, String data) {
 		URL url;
 		HttpURLConnection urlConnection = null;
 		OutputStream out =null;
@@ -267,9 +275,7 @@ public class SwiftyMain extends Activity {
 			is = con.getInputStream();
 		} catch (Exception e) {
 			e.printStackTrace();
-		} finally {
-			con.disconnect();
-		}
+		} 
 		return is;
 	}
 
@@ -302,7 +308,7 @@ public class SwiftyMain extends Activity {
 	/** 
 	 * Action to create a challenge.
 	 */
-	private void addChallenge() {
+	private void startingChallenge() {
 		addingNew = true;
 		editableChallenge.setVisibility(View.VISIBLE);
 		editableChallenge.requestFocus(); 
@@ -311,10 +317,28 @@ public class SwiftyMain extends Activity {
 		String substituteSubject = sharedPref.getString(getString(R.string.substitueSubjectKey), "Tommy2");
 		String subj = getString(R.string.substitueSubjectKey)+ " gushed";
 		subj = subj.replace(getString(R.string.substitueSubjectKey), substituteSubject);
-		//fetch a new pun from somewhere
+		//todo fetch a new pun from somewhere
 		Pun newPun = new Pun("		", subj, substituteSubject);
 		editableChallenge.setTag(CHALLENGE_PUN, newPun);// attach the fully defined pun for use after finished editing
 		nonEditablePart.setText(newPun.getAdverb());
 		editablePart.setText(newPun.getStmt());
 	}
+	
+	private OnKeyListener finishedChallenge = new OnKeyListener() {
+		public boolean onKey(View v, int keyCode, KeyEvent event) {
+			if (event.getAction() == KeyEvent.ACTION_DOWN)
+				if (keyCode == KeyEvent.KEYCODE_ENTER) {
+					cancelAdd();
+
+					Pun finishedPun = (Pun)editableChallenge.getTag(CHALLENGE_PUN);
+					finishedPun.setStmt(editablePart.getText().toString());
+				    puns.add(0, finishedPun);
+				    editablePart.setText("");
+					adapter.notifyDataSetChanged();
+					return true; 
+				}
+			return false;
+		}
+	};
+	
 }
