@@ -1,0 +1,60 @@
+{"swiftys": [
+{
+        "created": "1374499596",
+        "author": "robert@ibm.com",
+        "subject": "Rhonda",
+        "stmt": "You tangled my hair!",
+        "adverb": "Rhonda snarled."
+    },
+    
+{
+        "created": "1372999596",
+        "author": "robert@ibm.com",
+        "subject": "Tom",
+        "stmt": "Fire!",
+        "adverb": "yelled Tom alarmingly."
+    },
+    
+    {
+        "created": "1372970596",
+        "author": "irene@nasa.gov",
+        "subject": "Tom",
+        "stmt": "We should hurry,",
+        "adverb": "Tom said swiftly."
+    },
+    {
+        "created": "1372974500",
+        "author": "irene@nasa.gov",
+        "subject": "Tom",
+        "stmt": "I'll have a martini.",
+        "adverb": "Tom said dryly."
+    },
+    {
+        "created": "1372974500",
+        "author": "irene@nasa.gov",
+        "subject": "He",
+        "stmt": "We struck oil!",
+        "adverb": "He gushed."
+    },
+    {
+        "created": "1372970696",
+        "author": "chief@oxygenxml.com",
+        "subject": "Tom",
+        "stmt": "I'm no good at playing darts,",
+        "adverb": "Tom said aimlessly."
+    },
+    {
+        "created": "1372970700",
+        "author": "irene@nasa.gov",
+        "subject": "He",
+        "stmt": "Let's get married,",
+        "adverb": "He said engagingly"
+    },
+    {
+        "created": "1372970800",
+        "author": "worker@hotmail.com",
+        "subject": "Irene",
+        "stmt": "I joined the Peace Corp,",
+        "adverb": "Irene volunteered."
+    }
+]}

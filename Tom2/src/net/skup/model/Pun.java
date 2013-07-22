@@ -25,16 +25,16 @@ public class Pun {
 	
 	/**
 	 * 
-	 * @param creationTimeLong - eg "123456789" in seconds
+	 * @param creationTimeSeconds - eg "123456789" in seconds
 	 * @param auth - author
 	 * @param statement - first part
 	 * @param adv - second part
 	 * @param subj - the subject eg "Tom"
 	 */
-	public Pun(String creationTimeLong, String auth, String statement, String adv, String subj) {
+	public Pun(String creationTimeSeconds, String auth, String statement, String adv, String subj) {
 		   
-		createdTimeSeconds =  Long.parseLong(creationTimeLong);
-		formattedCreationTime = sdf.format(new Date(createdTimeSeconds));
+		createdTimeSeconds =  Long.parseLong(creationTimeSeconds);
+		formattedCreationTime = sdf.format(new Date(createdTimeSeconds * 1000));
 		author = auth;
 		stmt = statement;
 		adverb = adv;
