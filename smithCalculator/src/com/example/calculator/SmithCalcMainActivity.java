@@ -87,14 +87,26 @@ public class SmithCalcMainActivity extends Activity {
 		startActivityForResult(i, 1);
 	}
 
+    public void  onClickBindingFactorial(View view) {
+    	Intent i = new Intent(this,FactorialBindingActivity.class);
+		startActivityForResult(i, 111);
+	}
+    
     @Override
     public void onActivityResult(int request, int resultCode,
     		Intent data) {
-    	if ((request == 1)&& (resultCode == RESULT_OK)) {
+    	if ((request == 1) && (resultCode == RESULT_OK)) {
                 displayAnsw.setText(Double.toString(
                 		data.getExtras().getDouble("result")));
 
         }
+    	
+    	if ((request == 111) && (resultCode == RESULT_OK)) {
+            displayAnsw.setText(Double.toString(
+            		data.getExtras().getDouble("result")));
+
+    }
+    	
     }
 	/**
 	 *  Return local cache if a calculation has been done.

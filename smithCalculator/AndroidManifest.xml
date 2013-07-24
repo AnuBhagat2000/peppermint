@@ -29,6 +29,15 @@
             android:name="com.example.calculator.FactorialActivity"
             android:label="@string/title_activity_factorial" >
         </activity>
+        <activity
+            android:name="com.example.calculator.FactorialBindingActivity"
+            android:label="factorial binding activity" >
+        </activity>
+
+        <service
+            android:name="FactorialService"
+            android:label="FactorialService" >
+        </service>
     </application>
 
 </manifest>

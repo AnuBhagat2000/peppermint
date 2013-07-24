@@ -10,7 +10,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.prefs.Preferences;
+import java.util.Random;
 
 import net.skup.model.Pun;
 
@@ -23,7 +23,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.StrictMode;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -45,15 +44,14 @@ public class SwiftyMain extends Activity {
 	private EditText editablePart;
 	private TextView nonEditablePart;
 
-	private List<Pun> puns ;	
-	private List<Pun> puns2 ;
+	private List<Pun> puns = new ArrayList<Pun>();
+	private List<Pun> challenges = new ArrayList<Pun>();
+	private String substituteSubject = null;
 
     public static final int CHALLENGE_PUN = R.id.challenge;
-	boolean sortByLaughSetting = true; //vs sort by groan
-	public static final String sortByLaugh = "sortByLaugh";
 	private boolean addingNew = false;
 	private SwiftyAdapter adapter;
-	private static final String SWTAG = "swiftys"; //TODO remove from bandwidth
+	private static final String SWTAG = "swiftys"; // outer json object key (could be timestamp in future)
 
 	
 	@Override
@@ -65,28 +63,17 @@ public class SwiftyMain extends Activity {
 		editableChallenge = (ViewGroup)findViewById(R.id.editableChallenge);
 		editablePart = (EditText)findViewById(R.id.editTextSubject);
 		nonEditablePart = (TextView)findViewById(R.id.editTextAdverb);
-
+		//final ListView listview = (ListView) findViewById(R.id.listview);
 
 		/** Finished editing a Challenge. */
 		editablePart.setOnKeyListener(finishedChallenge);
 
-		// TODO async
+		// TODO async -- Strict Mode produces Network On Main exception w/out this permit all
 		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
 		StrictMode.setThreadPolicy(policy); 
-		
-		InputStream web_is = getDataWithURL("http://tom-swifty.appspot.com/sample.json");//http://10.0.2.2:8080/sample.json");
-		puns2 = getData(convertToString(web_is));
-		//System.err.println("stringify  "+jsonStringify(puns2));
-		postData("http://10.0.2.2:8080/sample33.json", "skupniewicz");
-		
-		InputStream fis = getResources().openRawResource(R.raw.sample);
-		puns = getData(convertToString(fis));
 
-		final ListView listview = (ListView) findViewById(R.id.listview);
-		adapter = new SwiftyAdapter(this,  puns);
-		listview.setAdapter(adapter);
 
-		listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+		mainListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
 			@Override
 			public void onItemClick(AdapterView<?> parent, final View view,
@@ -104,7 +91,7 @@ public class SwiftyMain extends Activity {
 
 		});
 
-		listview.setOnItemClickListener(new OnItemClickListener() {
+		mainListView.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view,
 					int position, long id) {
@@ -115,21 +102,67 @@ public class SwiftyMain extends Activity {
 		}); 
 	}
 
-	 @Override
-	 protected void onStop(){
-		 super.onStop();
+	/*
+	 * Get the latest challenges data.
+	 */
+	@Override
+	protected void onStart() {
+		super.onStart();
+		
+		// Get challenges from web
+		InputStream web_is = getDataWithURL("http://tom-swifty.appspot.com/sample.json");//http://10.0.2.2:8080/sample.json");
+		challenges = getData(convertToString(web_is));
+	}
+	
+	/*
+	 * Restore Settings values.
+	 */
+	@Override
+	protected void onResume() {
+		super.onResume();
+		Log.i(getClass().getName()," onPause- getting saved data");
 
-		 // We need an Editor object to make preference changes.
-		 // All objects are from android.context.Context
-		 SharedPreferences settings = getPreferences( 0);
-		 SharedPreferences.Editor editor = settings.edit();
-		 String sav = jsonStringify(puns);
-		 System.out.println(sav);
-		 editor.putString(SWTAG, sav);
+		SharedPreferences sharedPref = getPreferences(0);;//PreferenceManager.getDefaultSharedPreferences(this); bug , onpause did not read these bk in
+		// GET Settings and GET user data
+	    substituteSubject = sharedPref.getString(getString(R.string.substitueSubjectKey), "Tommy");
+		Log.i(getClass().getName(),"substituteSubject: "+ substituteSubject);
+		// GET user data from prefs (fallback to file)
+        String punCache = sharedPref.getString(SWTAG, "");
+        if (punCache.isEmpty()) {
+    		InputStream fis = getResources().openRawResource(R.raw.sample);
+    		punCache = convertToString(fis);
+        }
+		puns = getData(punCache);
+		adapter = new SwiftyAdapter(this,  puns);
+		mainListView.setAdapter(adapter);
 
-		 // Commit the edits!
-		 editor.commit();
-	 }
+	}
+	
+	/*
+	 * Save edits made by user edit of my own puns, or new Settings.
+	 */
+	@Override
+	protected void onPause() {
+		super.onPause();
+
+		SharedPreferences uiState = getPreferences(0);
+		SharedPreferences.Editor editor = uiState.edit();
+		
+		// PUT settings and PUT user data
+		editor.putString(getString(R.string.substitueSubjectKey), substituteSubject);
+		editor.putString(SWTAG, jsonStringify(puns)); //save user data to SWTAG bucket in shared prefs
+		
+		editor.commit();
+		Log.i(getClass().getName()," onPause() persisting userData(puns) and Settings (need to be quick)");
+	}
+	
+	@Override 
+	protected void onStop() {
+		super.onStop();
+		Log.i(getClass().getName()," onStop- saving data");
+
+		
+	}
 	 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -145,14 +178,11 @@ public class SwiftyMain extends Activity {
 		// Handle item selection
 		switch (item.getItemId()) {
 		case R.id.settings:{
-			sortByLaughSetting = !sortByLaughSetting;
 			startActivity(new Intent(this, Prefs.class));
 			break;
 		}
 		case R.id.challenge:{
-			SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-			String substituteSubject = sharedPref.getString(getString(R.string.substitueSubjectKey), "Tommy");
-			Log.i("substituteSubject", substituteSubject);
+		
 
 			startingChallenge();
 			return true;
@@ -164,16 +194,7 @@ public class SwiftyMain extends Activity {
 		return true;
 	}
 
-	@Override
-	protected void onPause() {
 
-		super.onPause();
-		SharedPreferences uiState = getPreferences(0);
-		SharedPreferences.Editor editor = uiState.edit();
-		editor.putBoolean(sortByLaugh, sortByLaughSetting);
-		editor.commit();
-		Log.i("onPause","persisting "+sortByLaugh+ " "+sortByLaughSetting);
-	}
 
 	/*
 	 * 
@@ -254,7 +275,7 @@ public class SwiftyMain extends Activity {
 			Log.e(getClass().getName(), e.getMessage());
 		}
 		finally {
-			try {out.close();} catch (IOException e) {}
+			try {if (out != null) out.close();} catch (IOException e) {}
 			urlConnection.disconnect();
 		}
 	}
@@ -312,13 +333,16 @@ public class SwiftyMain extends Activity {
 		addingNew = true;
 		editableChallenge.setVisibility(View.VISIBLE);
 		editableChallenge.requestFocus(); 
+
+
+		// fetch a new challenge
+		Pun newPun = challenges.get(new Random().nextInt(challenges.size() - 1));
+
+		Log.i (getClass().getName(), "substitute Subject:"+substituteSubject);
+        // TODO replace the placeholder in the subject line with the substituue subject. For this to work, need raw data to have SUBJ buried in it.
+		String subjectPart = newPun.getAdverb();
+		subjectPart = subjectPart.replace(getString(R.string.substitueSubjectKey), substituteSubject);
 		
-		SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-		String substituteSubject = sharedPref.getString(getString(R.string.substitueSubjectKey), "Tommy2");
-		String subj = getString(R.string.substitueSubjectKey)+ " gushed";
-		subj = subj.replace(getString(R.string.substitueSubjectKey), substituteSubject);
-		//todo fetch a new pun from somewhere
-		Pun newPun = new Pun("		", subj, substituteSubject);
 		editableChallenge.setTag(CHALLENGE_PUN, newPun);// attach the fully defined pun for use after finished editing
 		nonEditablePart.setText(newPun.getAdverb());
 		editablePart.setText(newPun.getStmt());

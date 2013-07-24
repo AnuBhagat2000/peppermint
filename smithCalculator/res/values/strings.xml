@@ -16,8 +16,8 @@
     <string name="empty"></string>
     <string name="back">Back</string>
     <string name="longText">The road to hell is paved with good intentions. - Maddonna</string>
-    <string name="showPrevious">Show Previous</string>
-    <string name="showDetails">Show Details</string>
+    <string name="showPrevious">Show Prev</string>
+    <string name="showDetails">Details</string>
 
     <string-array name="ops">
         <item>@string/add</item>
