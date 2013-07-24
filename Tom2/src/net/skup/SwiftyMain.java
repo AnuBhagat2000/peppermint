@@ -110,7 +110,8 @@ public class SwiftyMain extends Activity {
 		super.onStart();
 		
 		// Get challenges from web
-		InputStream web_is = getDataWithURL("http://tom-swifty.appspot.com/sample.json");//http://10.0.2.2:8080/sample.json");
+		InputStream web_is = getDataWithURL("http://tom-swifty.appspot.com/challenges.json");
+				//"http://tom-swifty.appspot.com/sample.json");//http://10.0.2.2:8080/sample.json");
 		challenges = getData(convertToString(web_is));
 	}
 	
