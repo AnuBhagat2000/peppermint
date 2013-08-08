@@ -2,13 +2,14 @@
 
     <item
         android:id="@+id/challenge"
+        android:icon="@drawable/rocket32x32plusd"
         android:showAsAction="always|withText"
         android:title="@string/challenge"/>
     <item
         android:id="@+id/settings"
+        android:icon="@drawable/darkactionsettings"
         android:orderInCategory="100"
         android:showAsAction="always"
-        android:icon="@drawable/facehappy22x22"
-        android:title="user Name setting"/>
+        android:title="Settings"/>
 
 </menu>

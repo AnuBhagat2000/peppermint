@@ -22,7 +22,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.StrictMode;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -52,6 +51,7 @@ public class SwiftyMain extends Activity {
 	private boolean addingNew = false;
 	private SwiftyAdapter adapter;
 	private static final String SWTAG = "swiftys"; // outer json object key (could be timestamp in future)
+	private static final String challengesURL = "http://tom-swifty.appspot.com/challenges.json";
 
 	
 	@Override
@@ -63,15 +63,9 @@ public class SwiftyMain extends Activity {
 		editableChallenge = (ViewGroup)findViewById(R.id.editableChallenge);
 		editablePart = (EditText)findViewById(R.id.editTextSubject);
 		nonEditablePart = (TextView)findViewById(R.id.editTextAdverb);
-		//final ListView listview = (ListView) findViewById(R.id.listview);
 
 		/** Finished editing a Challenge. */
 		editablePart.setOnKeyListener(finishedChallenge);
-
-		// TODO async -- Strict Mode produces Network On Main exception w/out this permit all
-		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-		StrictMode.setThreadPolicy(policy); 
-
 
 		mainListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
@@ -108,11 +102,11 @@ public class SwiftyMain extends Activity {
 	@Override
 	protected void onStart() {
 		super.onStart();
-		
+		new DownloadFilesTask(this).execute(new String[] {challengesURL});
 		// Get challenges from web
-		InputStream web_is = getDataWithURL("http://tom-swifty.appspot.com/challenges.json");
-				//"http://tom-swifty.appspot.com/sample.json");//http://10.0.2.2:8080/sample.json");
-		challenges = getData(convertToString(web_is));
+//		InputStream web_is = getDataWithURL("http://tom-swifty.appspot.com/challenges.json");
+//				//"http://tom-swifty.appspot.com/sample.json");//http://10.0.2.2:8080/sample.json");
+//		challenges = getData(convertToString(web_is));
 	}
 	
 	/*
@@ -282,31 +276,14 @@ public class SwiftyMain extends Activity {
 	}
 	
 	
-	// see http://androidsnippets.com/executing-a-http-post-request-with-httpclient
-	/**
-	 * Open a URL.
-	 * http://www.vogella.com/articles/AndroidNetworking/article.html
-	 */
-	private InputStream getDataWithURL(String u) {
-		InputStream is = null;
-		HttpURLConnection con = null;
-
-		try {
-			URL url = new URL(u);
-			con = (HttpURLConnection) url.openConnection();
-			is = con.getInputStream();
-		} catch (Exception e) {
-			e.printStackTrace();
-		} 
-		return is;
-	}
+	
 
 	/**
 	 * Converts an input stream to a String.
 	 * http://www.androidhive.info/2012/01/android-json-parsing-tutorial/
 	 * @return the string
 	 */
-	private String convertToString(InputStream in) {
+	public static String convertToString(InputStream in) {
 
 		StringBuilder sb = new StringBuilder();
 		BufferedReader reader = null;
@@ -365,5 +342,9 @@ public class SwiftyMain extends Activity {
 			return false;
 		}
 	};
+	
+	public void setChallenges(String puns) {
+		challenges = getData(puns);
+	}
 	
 }
