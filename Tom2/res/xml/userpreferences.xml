@@ -2,10 +2,10 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <EditTextPreference
-        android:defaultValue="Tom"
+        android:defaultValue="@string/defaultSubject"
         android:dialogTitle="Enter User Name"
         android:key="@string/substitueSubjectKey"
-        android:summary="Name to substitute for your subject."
-        android:title="User Name" />
+        android:summary="Your Name"
+        android:title="Your Name" />
 
 </PreferenceScreen>

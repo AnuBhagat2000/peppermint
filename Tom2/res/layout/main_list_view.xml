@@ -14,19 +14,19 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:orientation="vertical"
+        android:background="#cc5490"
         android:visibility="gone" >
 
-        <EditText
-            android:id="@+id/editTextSubject"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text=".. stmt " />
+        <Spinner
+            android:id="@+id/challengesSpinner"
+             android:layout_width="fill_parent"
+            android:layout_height="wrap_content"/>
 
         <TextView
             android:id="@+id/editTextAdverb"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="... some adverb...w Subject su " />
+            android:text="@string/challengesAdverbDefaultText" />
     </LinearLayout>
 
     <ListView

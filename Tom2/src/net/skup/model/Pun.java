@@ -10,9 +10,9 @@ import org.json.JSONObject;
 import android.util.Log;
 
 public class Pun {
+	
+	public static final String NOW = "NOW";
 	static public final SimpleDateFormat sdf = new SimpleDateFormat("MM-dd HH:mm", Locale.US);
-
-
 	public enum T {
 		created, author, subject, stmt, adverb
 	}
@@ -61,17 +61,17 @@ public class Pun {
 	 * @param statement
 	 * @param adverb
 	 */
-	public Pun(String statement, String adverb, String substituteSubject) {
-
-		createdTimeSeconds = System.currentTimeMillis() / 1000;
-		formattedCreationTime = sdf.format(createdTimeSeconds);
-		this.author = substituteSubject;
-		this.subject = author; 
-		this.stmt = statement;
-		this.adverb = adverb;
-	}
-
-
+//	public Pun(String statement, String adverb, String substituteSubject,String s) {
+//
+//		createdTimeSeconds = System.currentTimeMillis() / 1000;
+//		formattedCreationTime = sdf.format(createdTimeSeconds * 1000);
+//		this.author = substituteSubject;
+//		this.subject = author; 
+//		this.stmt = statement;
+//		this.adverb = adverb;
+//	}
+//
+//
 
 	public String getCreated() {
 		if (formattedCreationTime == null || formattedCreationTime.isEmpty()) {
@@ -89,7 +89,12 @@ public class Pun {
 	}
 
 	public void setCreated(String created) {
-		this.formattedCreationTime = created;
+		if (created.equals(NOW)) {
+			createdTimeSeconds = System.currentTimeMillis() / 1000;
+			formattedCreationTime = sdf.format(createdTimeSeconds * 1000);
+		} else {
+			formattedCreationTime = created;
+		}
 	}
 	public String getAuthor() {
 		return author;

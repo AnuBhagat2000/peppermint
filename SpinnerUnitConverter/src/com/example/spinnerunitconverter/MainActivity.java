@@ -5,7 +5,6 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.AdapterView;
@@ -15,7 +14,7 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-public class MainActivity extends Activity  implements OnItemSelectedListener{
+public class MainActivity extends Activity implements OnItemSelectedListener{
 	Spinner fromUnitSpinner, toUnitSpinner, unitTypeSpinner;
 	ArrayAdapter<CharSequence> temperatureAdapter, weightAdapter;
 	TextView answerTextField;
@@ -32,6 +31,11 @@ public class MainActivity extends Activity  implements OnItemSelectedListener{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
+		// find the UI component, set its OnItemSelectedListener, create arrayAdapter<CharSeq> from a plain property, also declare the item view for the spinner ?,
+		// what is simplespinneritem and simplespinnerdropdownitem?
+		//Associate the spinner UI to its adapter.
+		// Write On-Selected listener which handles the selection.
+		
 		unitTypeSpinner = (Spinner)findViewById(R.id.spinnerUnitType);
 		fromUnitSpinner = (Spinner) findViewById(R.id.fromUnit);
 		toUnitSpinner = (Spinner) findViewById(R.id.toUnit);

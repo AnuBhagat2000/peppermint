@@ -6,5 +6,7 @@
     <string name="sortByGroan">Sort by Groan</string>
     <string name="challenge">Challenge Me</string>
     <string name="substitueSubjectKey">SUBJ</string>
-    
+    <string name="defaultSubject">LittleTom</string>
+    <string name="challengesAdverbDefaultText">....challengesAdverbDefaultText...</string>
+
 </resources>

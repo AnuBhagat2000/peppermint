@@ -22,50 +22,56 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnKeyListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.EditText;
+import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class SwiftyMain extends Activity {
+public class SwiftyMain extends Activity implements OnItemSelectedListener {
 
 	private ListView mainListView;
 	private ViewGroup editableChallenge;
-	private EditText editablePart;
+	private Spinner editablePart;
 	private TextView nonEditablePart;
 
 	private List<Pun> puns = new ArrayList<Pun>();
 	private List<Pun> challenges = new ArrayList<Pun>();
-	private String substituteSubject = null;
 
     public static final int CHALLENGE_PUN = R.id.challenge;
 	private boolean addingNew = false;
 	private SwiftyAdapter adapter;
 	private static final String SWTAG = "swiftys"; // outer json object key (could be timestamp in future)
+	private static final String SpinnerSentinal = "Select One (or nothing to Cancel)";
 	private static final String challengesURL = "http://tom-swifty.appspot.com/challenges.json";
+    private String dropdownSelection = null;
+	private SharedPreferences myDefaultSP = null;
 
-	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 
 		super.onCreate(savedInstanceState);
+		myDefaultSP = PreferenceManager.getDefaultSharedPreferences(this);
 		setContentView(R.layout.main_list_view);
 		mainListView = (ListView)findViewById(R.id.listview);
 		editableChallenge = (ViewGroup)findViewById(R.id.editableChallenge);
-		editablePart = (EditText)findViewById(R.id.editTextSubject);
+		editablePart = (Spinner)findViewById(R.id.challengesSpinner);
 		nonEditablePart = (TextView)findViewById(R.id.editTextAdverb);
-
-		/** Finished editing a Challenge. */
-		editablePart.setOnKeyListener(finishedChallenge);
+		// If newly installed, and Preference Activity was not run by the user, then the XML defaults won't be
+		// available.  Thus copy defaults from the XML definition to the PreferenceManager. 
+		PreferenceManager.setDefaultValues(this, R.xml.userpreferences, false);
+		   
+		//editablePart.setOnKeyListener(finishedChallenge);
+		editablePart.setOnItemSelectedListener(this);
 
 		mainListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
@@ -96,31 +102,22 @@ public class SwiftyMain extends Activity {
 		}); 
 	}
 
-	/*
-	 * Get the latest challenges data.
-	 */
+	/** Get the latest challenges data. */
 	@Override
 	protected void onStart() {
 		super.onStart();
 		new DownloadFilesTask(this).execute(new String[] {challengesURL});
-		// Get challenges from web
-//		InputStream web_is = getDataWithURL("http://tom-swifty.appspot.com/challenges.json");
-//				//"http://tom-swifty.appspot.com/sample.json");//http://10.0.2.2:8080/sample.json");
-//		challenges = getData(convertToString(web_is));
 	}
 	
-	/*
-	 * Restore Settings values.
-	 */
+	/** Restore user data, with a fallback to the sample data.*/
 	@Override
 	protected void onResume() {
 		super.onResume();
-		Log.i(getClass().getName()," onPause- getting saved data");
 
-		SharedPreferences sharedPref = getPreferences(0);;//PreferenceManager.getDefaultSharedPreferences(this); bug , onpause did not read these bk in
-		// GET Settings and GET user data
-	    substituteSubject = sharedPref.getString(getString(R.string.substitueSubjectKey), "Tommy");
-		Log.i(getClass().getName(),"substituteSubject: "+ substituteSubject);
+		SharedPreferences sharedPref = getPreferences(0);
+		// GET user data
+	    //String gettUponResume = sharedPref.getString(getString(R.string.substitueSubjectKey), "Tommyxx");
+		//Log.i(getClass().getName(),"onRESUME : gettUponResume: "+ gettUponResume);
 		// GET user data from prefs (fallback to file)
         String punCache = sharedPref.getString(SWTAG, "");
         if (punCache.isEmpty()) {
@@ -130,33 +127,26 @@ public class SwiftyMain extends Activity {
 		puns = getData(punCache);
 		adapter = new SwiftyAdapter(this,  puns);
 		mainListView.setAdapter(adapter);
+		Log.i(getClass().getName()," onResume() getting saved Puns");
 
 	}
 	
-	/*
-	 * Save edits made by user edit of my own puns, or new Settings.
-	 */
+	/** Save edits. Needs to be quick. */
 	@Override
 	protected void onPause() {
 		super.onPause();
-
 		SharedPreferences uiState = getPreferences(0);
 		SharedPreferences.Editor editor = uiState.edit();
-		
-		// PUT settings and PUT user data
-		editor.putString(getString(R.string.substitueSubjectKey), substituteSubject);
-		editor.putString(SWTAG, jsonStringify(puns)); //save user data to SWTAG bucket in shared prefs
-		
+		//editor.putString(getString(R.string.substitueSubjectKey), substituteSubject);// PreferencesActivity already handles saving its own.
+		editor.putString(SWTAG, jsonStringify(puns)); 
 		editor.commit();
-		Log.i(getClass().getName()," onPause() persisting userData(puns) and Settings (need to be quick)");
+		Log.i(getClass().getName(),"onPause() persisting Puns");
 	}
 	
 	@Override 
 	protected void onStop() {
 		super.onStop();
 		Log.i(getClass().getName()," onStop- saving data");
-
-		
 	}
 	 
 	@Override
@@ -168,17 +158,13 @@ public class SwiftyMain extends Activity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		super.onOptionsItemSelected(item);
-		int index = mainListView.getSelectedItemPosition();
 
-		// Handle item selection
 		switch (item.getItemId()) {
 		case R.id.settings:{
 			startActivity(new Intent(this, Prefs.class));
 			break;
 		}
 		case R.id.challenge:{
-		
-
 			startingChallenge();
 			return true;
 		}
@@ -192,7 +178,7 @@ public class SwiftyMain extends Activity {
 
 
 	/*
-	 * 
+	 * Stringify a Pun list.
 	 * http://stackoverflow.com/questions/4841952/convert-arraylist-to-jsonarray
 	 */
 	private String jsonStringify(List<Pun> puns)  {
@@ -211,6 +197,7 @@ public class SwiftyMain extends Activity {
 		return row.toString();
 	}
 
+	/** Convert serialized Json to data. */
 	private List<Pun> getData(String data) {
 
 		List<Pun> swiftys = new ArrayList<Pun>();
@@ -236,15 +223,11 @@ public class SwiftyMain extends Activity {
 		addingNew = false;
 		editableChallenge.setVisibility(View.GONE);
 	}
-	
-	
 
 	private void removeItem(int _index) {
 		puns.remove(_index);
 		adapter.notifyDataSetChanged();  
 	}
-	
-	
 
 	private void postData(String u, String data) {
 		URL url;
@@ -253,18 +236,12 @@ public class SwiftyMain extends Activity {
 
 		try {
 			url = new URL(u);
-
 			urlConnection = (HttpURLConnection) url.openConnection();
-
 			urlConnection.setDoOutput(true);
 			urlConnection.setChunkedStreamingMode(0);
 			urlConnection.setRequestMethod("POST");//todo 
-
 		    out = new BufferedOutputStream(urlConnection.getOutputStream());
 			out.write(data.getBytes());
-
-			//			InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-			//			readStream(in);
 		} catch (Exception e) {
 			e.printStackTrace();
 			Log.e(getClass().getName(), e.getMessage());
@@ -274,8 +251,6 @@ public class SwiftyMain extends Activity {
 			urlConnection.disconnect();
 		}
 	}
-	
-	
 	
 
 	/**
@@ -304,47 +279,66 @@ public class SwiftyMain extends Activity {
 		return sb.toString();
 	} 
 	
-	/** 
-	 * Action to create a challenge.
-	 */
+    /** Start a challenge edit. */
 	private void startingChallenge() {
 		addingNew = true;
 		editableChallenge.setVisibility(View.VISIBLE);
 		editableChallenge.requestFocus(); 
-
-
-		// fetch a new challenge
+		// fetch a new challenge and put it in textedit area. 
 		Pun newPun = challenges.get(new Random().nextInt(challenges.size() - 1));
-
-		Log.i (getClass().getName(), "substitute Subject:"+substituteSubject);
-        // TODO replace the placeholder in the subject line with the substituue subject. For this to work, need raw data to have SUBJ buried in it.
-		String subjectPart = newPun.getAdverb();
-		subjectPart = subjectPart.replace(getString(R.string.substitueSubjectKey), substituteSubject);
-		
 		editableChallenge.setTag(CHALLENGE_PUN, newPun);// attach the fully defined pun for use after finished editing
 		nonEditablePart.setText(newPun.getAdverb());
-		editablePart.setText(newPun.getStmt());
+		//editablePart.setText(newPun.getStmt());
 	}
-	
-	private OnKeyListener finishedChallenge = new OnKeyListener() {
-		public boolean onKey(View v, int keyCode, KeyEvent event) {
-			if (event.getAction() == KeyEvent.ACTION_DOWN)
-				if (keyCode == KeyEvent.KEYCODE_ENTER) {
-					cancelAdd();
 
-					Pun finishedPun = (Pun)editableChallenge.getTag(CHALLENGE_PUN);
-					finishedPun.setStmt(editablePart.getText().toString());
-				    puns.add(0, finishedPun);
-				    editablePart.setText("");
-					adapter.notifyDataSetChanged();
-					return true; 
-				}
-			return false;
-		}
-	};
-	
+	/** Callback from remote fetch.*/
 	public void setChallenges(String puns) {
 		challenges = getData(puns);
+		String [] allChallengeStmts = new String[challenges.size()+1];
+		allChallengeStmts[0] = SpinnerSentinal;//http://stackoverflow.com/questions/867518/how-to-make-an-android-spinner-with-initial-text-select-one
+		for (int i=0;i<challenges.size(); i++) {
+			allChallengeStmts[i+1] = challenges.get(i).getStmt();
+		}
+		ArrayAdapter<String> challengesAdapter = new ArrayAdapter<String> (this, android.R.layout.simple_spinner_item, allChallengeStmts);
+		editablePart.setAdapter(challengesAdapter);
+		challengesAdapter.notifyDataSetChanged();
 	}
-	
+
+	/** Finished editing Challenge.*/
+	//http://stackoverflow.com/questions/8321251/why-onnothingselected-is-not-called
+	@Override
+	public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+		switch (parent.getId()) {
+		case R.id.challengesSpinner: {
+			dropdownSelection = (String) parent.getItemAtPosition(position);
+			if (dropdownSelection.startsWith(SpinnerSentinal)) {
+				Log.i ("cancel Challenge", "");
+				cancelAdd();
+			} else {
+				Log.i(this.getClass().getCanonicalName(),"selected challenged editable part");
+				cancelAdd();
+				Pun finishedPun = (Pun)editableChallenge.getTag(CHALLENGE_PUN);
+				editableChallenge.setTag(null);//clear cache
+				finishedPun.setStmt(dropdownSelection);
+				String defaultIfJustInstalled = getString(R.string.defaultSubject);
+			    String subject2 = myDefaultSP.getString(getString(R.string.substitueSubjectKey), defaultIfJustInstalled);
+
+				finishedPun.setAuthor(subject2);
+				finishedPun.setCreated(Pun.NOW);
+			    puns.add(0, finishedPun);
+				adapter.notifyDataSetChanged();
+			}
+			break;
+		}
+		default: {
+			assert false: "Invalid View id.";
+		break;
+		}
+		}
+	}
+
+	@Override
+	public void onNothingSelected(AdapterView<?> parent) {
+		assert false :"todo";
+	}
 }
