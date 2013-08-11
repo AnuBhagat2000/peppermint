@@ -5,6 +5,11 @@
         android:icon="@drawable/rocket32x32plusd"
         android:showAsAction="always|withText"
         android:title="@string/challenge"/>
+     <item
+        android:id="@+id/helpMenuItem"
+        android:icon="@drawable/questionbook"
+        android:showAsAction="always"
+        android:title="@string/removeSwifty"/>
     <item
         android:id="@+id/settings"
         android:icon="@drawable/darkactionsettings"

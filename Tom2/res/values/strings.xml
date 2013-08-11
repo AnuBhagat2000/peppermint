@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">TomSwifty</string>
+    <string name="app_name">Tom Swifty</string>
     <string name="sortByLaugh">Sort by Laugh</string>
     <string name="sortByGroan">Sort by Groan</string>
     <string name="challenge">Challenge Me</string>
+    <string name="removeSwifty">Remove Swifty</string>
     <string name="substitueSubjectKey">SUBJ</string>
     <string name="defaultSubject">LittleTom</string>
     <string name="challengesAdverbDefaultText">....challengesAdverbDefaultText...</string>

@@ -24,12 +24,14 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.ActionMode;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -55,7 +57,68 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener {
 	private static final String challengesURL = "http://tom-swifty.appspot.com/challenges.json";
     private String dropdownSelection = null;
 	private SharedPreferences myDefaultSP = null;
+	private Object mActionMode;
+	private int selectedItem = -1;
+	
+	/* Contextual Action Bar (CAB) is the visual for Contextual Action Mode. It overlays the action bar. 
+	 * http://www.vogella.com/articles/AndroidListView/article.html#listview_actionbar
+	 */
+	private ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
 
+		// Called when the action mode is created; startActionMode() was called
+		public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+			// Inflate a menu resource providing context menu items
+			MenuInflater inflater = mode.getMenuInflater();
+			// Assumes that you have "contexual.xml" menu resources
+			inflater.inflate(R.menu.rowselection, menu);
+			return true;
+		}
+
+		// Called each time the action mode is shown. Always called after
+		// onCreateActionMode, but
+		// may be called multiple times if the mode is invalidated.
+		public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+			return false; // Return false if nothing is done
+		}
+
+		// Called when the user selects a contextual menu item
+		public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+			switch (item.getItemId()) {
+			case R.id.menuitem1_show:
+				//removeItem(selectedItem);
+				deleteSwifty(selectedItem);
+				// Action picked, so close the CAB
+				mode.finish();
+				return true;
+			default:
+				return false;
+			}
+		}
+
+		// Called when the user exits the action mode
+		public void onDestroyActionMode(ActionMode mode) {
+			mActionMode = null;
+			selectedItem = -1;
+		}
+	};
+
+	private void removeItem(int index) {
+		puns.remove(index);
+		adapter.notifyDataSetChanged();  
+	}
+	
+	private void deleteSwifty(final int index) {
+//		final Pun pun = (Pun) mainListView.getItemAtPosition(selectedItem);
+//		puns.remove(pun);
+		mainListView.animate().setDuration(2000).alpha(0).withEndAction(new Runnable() {
+			@Override
+			public void run() {
+				puns.remove(index);
+				adapter.notifyDataSetChanged();
+				mainListView.setAlpha(1);
+			}
+		});
+	}
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 
@@ -73,33 +136,51 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener {
 		//editablePart.setOnKeyListener(finishedChallenge);
 		editablePart.setOnItemSelectedListener(this);
 
-		mainListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+		//http://www.vogella.com/articles/AndroidListView/article.html#listview_actionbar
+		mainListView.setOnItemLongClickListener(new OnItemLongClickListener() {
 
-			@Override
-			public void onItemClick(AdapterView<?> parent, final View view,
-					int position, long id) {
-				final String item = (String) parent.getItemAtPosition(position);
-				view.animate().setDuration(2000).alpha(0).withEndAction(new Runnable() {
-					@Override
-					public void run() {
-						puns.remove(item);
-						adapter.notifyDataSetChanged();
-						view.setAlpha(1);
-					}
-				});
-			}
+		      @Override
+		      public boolean onItemLongClick(AdapterView<?> parent, View view,  int position, long id) {
 
-		});
+		        if (mActionMode != null) {
+		          return false;
+		        }
+		        selectedItem = position;
 
-		mainListView.setOnItemClickListener(new OnItemClickListener() {
-			@Override
-			public void onItemClick(AdapterView<?> parent, View view,
-					int position, long id) {
-				Toast.makeText(getApplicationContext(),
-						"Click ListItem Number " + position, Toast.LENGTH_LONG)
-						.show();
-			}
-		}); 
+		        // Start the CAB using the ActionMode.Callback defined above
+		        mActionMode = SwiftyMain.this.startActionMode(mActionModeCallback);
+		        view.setSelected(true);
+		        return true;
+		      }
+		    });
+	
+//		mainListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//
+//			@Override
+//			public void onItemClick(AdapterView<?> parent, final View view,
+//					int position, long id) {
+//				final String item = (String) parent.getItemAtPosition(position);
+//				view.animate().setDuration(2000).alpha(0).withEndAction(new Runnable() {
+//					@Override
+//					public void run() {
+//						puns.remove(item);
+//						adapter.notifyDataSetChanged();
+//						view.setAlpha(1);
+//					}
+//				});
+//			}
+//
+//		});
+
+//		mainListView.setOnItemClickListener(new OnItemClickListener() {
+//			@Override
+//			public void onItemClick(AdapterView<?> parent, View view,
+//					int position, long id) {
+//				Toast.makeText(getApplicationContext(),
+//						"Click ListItem Number " + position, Toast.LENGTH_LONG)
+//						.show();
+//			}
+//		}); 
 	}
 
 	/** Get the latest challenges data. */
@@ -115,9 +196,6 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener {
 		super.onResume();
 
 		SharedPreferences sharedPref = getPreferences(0);
-		// GET user data
-	    //String gettUponResume = sharedPref.getString(getString(R.string.substitueSubjectKey), "Tommyxx");
-		//Log.i(getClass().getName(),"onRESUME : gettUponResume: "+ gettUponResume);
 		// GET user data from prefs (fallback to file)
         String punCache = sharedPref.getString(SWTAG, "");
         if (punCache.isEmpty()) {
@@ -224,10 +302,7 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener {
 		editableChallenge.setVisibility(View.GONE);
 	}
 
-	private void removeItem(int _index) {
-		puns.remove(_index);
-		adapter.notifyDataSetChanged();  
-	}
+
 
 	private void postData(String u, String data) {
 		URL url;
@@ -288,7 +363,6 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener {
 		Pun newPun = challenges.get(new Random().nextInt(challenges.size() - 1));
 		editableChallenge.setTag(CHALLENGE_PUN, newPun);// attach the fully defined pun for use after finished editing
 		nonEditablePart.setText(newPun.getAdverb());
-		//editablePart.setText(newPun.getStmt());
 	}
 
 	/** Callback from remote fetch.*/
@@ -341,4 +415,32 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener {
 	public void onNothingSelected(AdapterView<?> parent) {
 		assert false :"todo";
 	}
+	
+
+
+// Various ways to offer  a delete. What teacher did, he adds menuitem to the Options Menu when there is at least
+// one menu item. .... but this didn't work for me...
+
+//	/** 
+//	 * If list size > 0 include a delete option menu item. 
+//	 */
+//	 @Override
+//	  public boolean onPrepareOptionsMenu(Menu menu) {
+//	    super.onPrepareOptionsMenu(menu);
+//
+//	    int idx = mainListView.getSelectedItemPosition();
+//	    MenuItem removeSwiftyMenuItem = menu.findItem(R.id.removeMenuItem);
+//	    removeSwiftyMenuItem.setTitle("Delete Swifty");
+//	    removeSwiftyMenuItem.setVisible(idx > -1);
+//
+//	    return true;
+//	  }
+//	  
+//	  @Override
+//	  public void onCreateContextMenu(ContextMenu menu,  View v,  ContextMenu.ContextMenuInfo menuInfo) {
+//	    super.onCreateContextMenu(menu, v, menuInfo);
+//
+//	    menu.setHeaderTitle("header title...");
+//	    menu.add(0, R.id.removeMenuItem, Menu.NONE, R.string.removeSwifty);
+//	  }
 }
