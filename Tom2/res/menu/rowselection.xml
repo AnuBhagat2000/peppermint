@@ -4,6 +4,6 @@
 <item
         android:id="@+id/menuitem1_show"
         android:title="Delete Swifty"
-        android:icon="@drawable/oxygen480"/>
+        android:icon="@drawable/deleteswifty2"/>
 
 </menu>

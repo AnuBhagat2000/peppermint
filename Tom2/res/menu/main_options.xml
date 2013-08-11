@@ -2,12 +2,12 @@
 
     <item
         android:id="@+id/challenge"
-        android:icon="@drawable/rocket32x32plusd"
+        android:icon="@drawable/addswifty2"
         android:showAsAction="always|withText"
         android:title="@string/challenge"/>
      <item
         android:id="@+id/helpMenuItem"
-        android:icon="@drawable/questionbook"
+        android:icon="@drawable/helpoptionmenu"
         android:showAsAction="always"
         android:title="@string/removeSwifty"/>
     <item
