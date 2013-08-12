@@ -1,17 +1,19 @@
-package net.skup.swifty;
+package net.skup.swifty.model;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import net.skup.swifty.DownloadFilesTask;
 import net.skup.swifty.DownloadFilesTask.Downloader;
-import net.skup.swifty.model.Pun;
 
 public class ChallengesProvider implements Downloader {
 
 	private List<Pun> challenges = new ArrayList<Pun>();
     private List<Long> blacklist = new ArrayList<Long>();//used up
 	private int limit = 100;
+	public static final String challengesURL = "http://tom-swifty.appspot.com/challenges.json";
+
     
 	private static ChallengesProvider instance = null;
 	private ChallengesProvider() {
@@ -22,6 +24,14 @@ public class ChallengesProvider implements Downloader {
 			instance = new ChallengesProvider();
 		}
 		return instance;
+	}
+	
+	public int size() {
+		return challenges.size();
+	}
+	
+	int blacklistSize() {
+		return blacklist.size();
 	}
 	
 	/** Disqualify or consume a pun. */
@@ -60,9 +70,9 @@ public class ChallengesProvider implements Downloader {
 		}
 	}
 
-	public void fetch(String url, int max) {
+	public void fetch( int max) {
 		limit = max;
-		new DownloadFilesTask(this).execute(new String[] {url});
+		new DownloadFilesTask(this).execute(new String[] {challengesURL});
 	}
 
 	@Override

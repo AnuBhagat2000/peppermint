@@ -13,8 +13,9 @@ import java.util.List;
 import java.util.Random;
 
 import net.skup.R;
-import net.skup.swifty.ChallengesProvider.ChallengeBlock;
+import net.skup.swifty.model.ChallengesProvider;
 import net.skup.swifty.model.Pun;
+import net.skup.swifty.model.ChallengesProvider.ChallengeBlock;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -54,7 +55,6 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener {
 	private boolean addingNew = false;
 	private SwiftyAdapter adapter;
 	private static final String SpinnerSentinal = "Select One (or nothing to Cancel)";
-	private static final String challengesURL = "http://tom-swifty.appspot.com/challenges.json";
     private String dropdownSelection = null;
 	private SharedPreferences myDefaultSP = null;
 	private Object mActionMode;
@@ -152,7 +152,7 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener {
 	@Override
 	protected void onStart() {
 		super.onStart();
-		ChallengesProvider.getInstance().fetch(challengesURL, 100);
+		ChallengesProvider.getInstance().fetch(100);
 	}
 	
 	/** Restore user data, with a fallback to the sample data.*/
