@@ -6,6 +6,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
+    android:background="@color/light_antique"
     tools:context=".SwiftyMain" >
 
     <LinearLayout
@@ -14,7 +15,6 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:orientation="vertical"
-        android:background="#cc5490"
         android:visibility="gone" >
 
         <Spinner
@@ -34,7 +34,8 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/editableChallenge"
-        android:divider="#A64D05"
-        android:dividerHeight="10.0sp" />
+         android:divider="#b5b5b5"
+        android:dividerHeight="1dp"
+        android:listSelector="@drawable/list_selector"/>
 
 </RelativeLayout>

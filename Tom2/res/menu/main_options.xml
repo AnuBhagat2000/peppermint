@@ -8,13 +8,13 @@
      <item
         android:id="@+id/helpMenuItem"
         android:icon="@drawable/helpoptionmenu"
-        android:showAsAction="always"
-        android:title="@string/removeSwifty"/>
+        android:showAsAction="never"
+        android:title="@string/help"/>
     <item
         android:id="@+id/settings"
         android:icon="@drawable/darkactionsettings"
         android:orderInCategory="100"
-        android:showAsAction="always"
-        android:title="Settings"/>
+        android:showAsAction="never"
+        android:title="@string/settingsTitle"/>
 
 </menu>

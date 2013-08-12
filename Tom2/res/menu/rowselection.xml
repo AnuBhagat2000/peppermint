@@ -3,7 +3,7 @@
     
 <item
         android:id="@+id/menuitem1_show"
-        android:title="Delete Swifty"
+        android:title="@string/deleteSwifty"
         android:icon="@drawable/deleteswifty2"/>
 
 </menu>
