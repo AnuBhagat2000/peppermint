@@ -7,5 +7,6 @@
     <color name="light_antique_gray">#f1f1f2</color>
     <color name="medium_antique_gray">#e7e7e8</color>
     <color name="dark_antique_gray">#cfcfcf</color>
+    <color name="inEdit">#def7f6</color>
 
 </resources>

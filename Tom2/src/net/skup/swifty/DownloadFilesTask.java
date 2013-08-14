@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import net.skup.swifty.model.Pun;
 import android.os.AsyncTask;
 
 /*
@@ -31,7 +32,7 @@ public class DownloadFilesTask extends AsyncTask<String, Void, String> {
         String rv = null;
         for (int i = 0; i < count; i++) {
         	InputStream web_is = getDataWithURL("http://tom-swifty.appspot.com/challenges.json");
-            rv = SwiftyMain.convertToString(web_is);
+            rv = Pun.convertToString(web_is);
             // Escape early if cancel() is called
             if (isCancelled()) break;
         }

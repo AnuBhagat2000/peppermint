@@ -55,11 +55,14 @@ Password for ir.smith99@gmail.com:
 Email: ir.smith99@gmail.com
 Password for ir.smith99@gmail.com: 
 Email: ir.smith99@gmail.com
-Password for ir.smith99@gmail.com: 
+Password for ir.smith99@gmail.com: ### enter pw from yellow box here 
 
-com.google.appengine.tools.admin.ClientLoginServerConnection$ClientLoginException: Use an application-specific password instead of your regular account password. See http://www.google.com/support/accounts/bin/answer.py?answer=185833
+com.google.appengine.tools.admin.ClientLoginServerConnection$ClientLoginException: Use an application-specific password instead of your regular account password. 
+See http://www.google.com/support/accounts/bin/answer.py?answer=185833
 Unable to update app: Use an application-specific password instead of your regular account password. See http://www.google.com/support/accounts/bin/answer.py?answer=185833
 Please see the logs [/var/folders/tj/tdh3l01x633dr9j3ztmd0601_79p0f/T/appcfg558534912804139142.log] for further information.
+
+NOTE I needed to revoke the prev one and gen a new one.
 
 3.6)
 https://accounts.google.com/IssuedAuthSubTokens?hide_authsub=1#accesscodes
@@ -70,3 +73,14 @@ enter email then the passw to
 
 
 4) Try your application out at:  http://<app-id>.appspot.com
+
+http://tom-swifty.appspot.com  ##this is the guestbook app
+http://tom-swifty.appspot.com/challenges.json
+
+
+Overview
+========
+data has attribution for each swifty
+using junit
+
+

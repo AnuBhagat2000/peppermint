@@ -23,14 +23,23 @@
     {
         "created": 1372770800,
         "author": "arthur",
+        "subject": "http://grammar.about.com/od/tz/g/Tom-Swifty.htm",
         "stmt": "I hope I can still play guitar,",
         "adverb": "Tom fretted."
     },
     {
-        "created": 1372870800,
-        "author": "edith",
-        "stmt": "I'm not afraid of horses,",
-        "adverb": "Tom bridled."
+        "created": 1372875800,
+        "author": "leonard",
+        "subject": "http://www.fun-with-words.com/tom_swifties_a-e.html",
+        "stmt": "Don't add too much water,",
+        "adverb": "said Tom with great concentration."
+    },
+    {
+        "created": 1372970800,
+        "author": "mario",
+        "subject": "http://www.fun-with-words.com/tom_swifties_a-e.html",
+        "stmt": "I dropped the toothpaste,",
+        "adverb": "said Tom, crestfallen"
     },
     {
         "created": 1372974500,

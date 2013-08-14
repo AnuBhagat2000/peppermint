@@ -1,5 +1,9 @@
 package net.skup.swifty.model;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -125,7 +129,7 @@ public class Pun {
 			}
 			Log.i(Pun.class.getName(),  "Number of entries " + swiftys.size());
 		} catch (Exception e) {
-			Log.e(Pun.class.getName(),"Could not parse json."+ e.getMessage());
+			Log.e(Pun.class.getName(),"Could not parse json."+ e.getMessage()+" successful entries " + swiftys.size());
 		}	
 		return swiftys;
 	}
@@ -149,5 +153,31 @@ public class Pun {
 		}
 		return row.toString();
 	}
+	
+	/**
+	 * Converts an input stream to a String.
+	 * http://www.androidhive.info/2012/01/android-json-parsing-tutorial/
+	 * @return the string
+	 */
+	public static String convertToString(InputStream in) {
+
+		StringBuilder sb = new StringBuilder();
+		BufferedReader reader = null;
+		try {
+			reader = new BufferedReader(new InputStreamReader(in));
+			String line = "";
+			while ((line = reader.readLine()) != null) {
+				sb.append(line);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			if (reader != null) {
+				try {reader.close();
+				} catch (IOException e) {}
+			}
+		}
+		return sb.toString();
+	} 
 	
 }
