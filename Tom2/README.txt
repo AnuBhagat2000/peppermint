@@ -80,7 +80,23 @@ http://tom-swifty.appspot.com/challenges.json
 
 Overview
 ========
+Challenges via mult choice 
+or via text input
+
+
+DATA
 data has attribution for each swifty
+blacklist of seen challenges is lifespan of the installation (not yet pushed to website)
+remote url for new challenges, or fallbk data for challenges
+initial raw sample file for sample data, persisted upon onPause
+bkend website is simple app engine.  I have hypersql but really just using Oxygen to edit json. DB Schema stores the json stringified with unique (time)keys.
+
+MISC
 using junit
+styling is antique
+open src icons, created my own
+Preferences - can set the author name
 
-
+LEARNINT:
+app context vs activity context
+spinner event upon instantiation

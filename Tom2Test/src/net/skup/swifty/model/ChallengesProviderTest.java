@@ -12,7 +12,7 @@ public class ChallengesProviderTest extends ActivityTestCase {
 
 	public void testPutObjectObject() throws InterruptedException {
 		int limit = 10;
-		ChallengesProvider cp =  ChallengesProvider.getInstance();
+		ChallengesProvider cp =  ChallengesProvider.getInstance(getActivity().getApplicationContext());
 
 
 		cp.fetch(limit); // load up to 10 data entries

@@ -16,19 +16,18 @@
         android:layout_alignParentTop="true"
         android:background="@color/inEdit"
         android:orientation="vertical"
-         >
+        android:visibility="gone" >
 
         <TextView
             android:id="@+id/nonEditableChallenge"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="... non editable challenge ..." />
+             />
 
         <Spinner
             android:id="@+id/challengesSpinner"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:entries="@array/array_name" />
+            android:layout_height="wrap_content"/>
     </LinearLayout>
 
     <ListView

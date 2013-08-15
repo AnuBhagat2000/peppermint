@@ -1,6 +1,6 @@
 package net.skup.swifty;
 
-import net.skup.R;
+import net.skup.swifty.R;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 

@@ -4,7 +4,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.skup.R;
 import net.skup.swifty.model.ChallengesProvider;
 import net.skup.swifty.model.ChallengesProvider.ChallengeBlock;
 import net.skup.swifty.model.Pun;
@@ -38,12 +37,12 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener {
 	private List<Pun> puns = new ArrayList<Pun>();
 	private static final String SENTINAL = "Select One (or nothing to Cancel)";
     public static final int CHALLENGE_PUN = R.id.challenge;
-	private boolean addingNew = false;
 	private SwiftyAdapter adapter;
     private String dropdownSelection = null;
-	private SharedPreferences myDefaultSP = null;
 	private Object mActionMode;
-	private int selectedItem = -1;
+	private int longClickItem = -1;
+	private int spinnerPrevSelection = -1;
+	
 	
 	/* Contextual Action Bar (CAB) is the visual for Contextual Action Mode. It overlays the action bar. 
 	 * http://www.vogella.com/articles/AndroidListView/article.html#listview_actionbar
@@ -63,7 +62,7 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener {
 		public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
 			switch (item.getItemId()) {
 			case R.id.menuitem1_show:
-				deleteSwifty(selectedItem);
+				deleteSwifty(longClickItem);
 				mode.finish();// Action picked, so close the CAB
 				return true;
 			default:
@@ -73,7 +72,7 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener {
 		@Override
 		public void onDestroyActionMode(ActionMode mode) {
 			mActionMode = null;
-			selectedItem = -1;
+			longClickItem = -1;
 		}
 	};
 
@@ -81,7 +80,7 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener {
 	protected void onCreate(Bundle savedInstanceState) {
 
 		super.onCreate(savedInstanceState);
-		myDefaultSP = PreferenceManager.getDefaultSharedPreferences(this);
+		//myDefaultSP = PreferenceManager.getDefaultSharedPreferences(this);
 		setContentView(R.layout.main_list_view);
 		mainListView = (ListView)findViewById(R.id.listview);
 		editableChallenge = (ViewGroup)findViewById(R.id.editableChallenge);
@@ -103,7 +102,7 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener {
 		        if (mActionMode != null) {
 		          return false;
 		        }
-		        selectedItem = position;
+		        longClickItem = position;
 
 		        // Start the CAB using the ActionMode.Callback defined above
 		        mActionMode = SwiftyMain.this.startActionMode(mActionModeCallback);
@@ -117,7 +116,7 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener {
 	@Override
 	protected void onStart() {
 		super.onStart();
-		ChallengesProvider.getInstance().fetch(100);
+		ChallengesProvider.getInstance(getApplicationContext()).fetch(100);
 	}
 	
 	/** Restore user data, with a fallback to the sample data.*/
@@ -126,17 +125,22 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener {
 		super.onResume();
 
 		SharedPreferences sharedPref = getPreferences(0);
-		// GET user data from prefs (fallback to file)
         String punCache = sharedPref.getString(Pun.SWTAG, "");
         if (punCache.isEmpty()) {
     		InputStream fis = getResources().openRawResource(R.raw.sample);
+    		if (fis == null) {
+        		String s = getClass().getSimpleName()+" onResume could not read sample file";
+        		Log.e(getClass().getSimpleName()+" onResume",s);
+        		throw new RuntimeException(s);
+    		}
     		punCache = Pun.convertToString(fis);
+    		Log.i(getClass().getSimpleName()+" onResume","got Puns from sample file.");
+        } else {
+    		Log.i(getClass().getSimpleName()+" onResume","restored Puns from persistence.");
         }
 		puns = Pun.deserializeJson(punCache);
 		adapter = new SwiftyAdapter(this,  puns);
 		mainListView.setAdapter(adapter);
-		Log.i(getClass().getName()," onResume() getting saved Puns");
-
 	}
 	
 	/** Save edits. Needs to be quick. */
@@ -148,13 +152,13 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener {
 		//editor.putString(getString(R.string.substitueSubjectKey), substituteSubject);// PreferencesActivity already handles saving its own.
 		editor.putString(Pun.SWTAG, Pun.jsonStringify(puns)); 
 		editor.commit();
-		Log.i(getClass().getName(),"onPause() persisting Puns");
+		Log.i(getClass().getSimpleName()+" onPause","persisting Puns");
 	}
 	
 	@Override 
 	protected void onStop() {
 		super.onStop();
-		Log.i(getClass().getName()," onStop- saving data");
+		Log.i(getClass().getSimpleName()+" onStop","onStop");
 	}
 	 
 	@Override
@@ -202,19 +206,17 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener {
 	}
 	
 	private void cancelAdd() {
-		addingNew = false;
-		//editableChallenge.setVisibility(View.GONE);
+		editableChallenge.setVisibility(View.GONE);
 	}
 
 	/** Start a challenge edit. */
 	private void startingChallenge() {
 
-		ChallengeBlock b = ChallengesProvider.getInstance().getChallenge(3, SENTINAL);
-		if (b.candidates.size() == 0) {
+		ChallengeBlock b = ChallengesProvider.getInstance(getApplicationContext()).getChallenge(3, SENTINAL);
+		if (b == null || b.candidates.size() == 0) {
 			Toast.makeText(getApplicationContext(), "No challenges available.", Toast.LENGTH_LONG).show();
 			return;
 		}
-		addingNew = true;
 		editableChallenge.setVisibility(View.VISIBLE);
 		editableChallenge.requestFocus();
 
@@ -226,29 +228,30 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener {
 		challengesAdapter.notifyDataSetChanged();
 	}
 
-
 	/** Finished editing Challenge.*/
-	//http://stackoverflow.com/questions/8321251/why-onnothingselected-is-not-called
 	@Override
 	public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-		Log.i(this.getClass().getCanonicalName(),"onItemSelected () ...sel:"+position);
 
+		if (spinnerPrevSelection < 0 || spinnerPrevSelection == position) {
+			Log.i (getClass().getSimpleName()+" onItemSelected", "filter, pos/prevSelection:"+position+"/"+spinnerPrevSelection);
+			//http://stackoverflow.com/questions/8321251/why-onnothingselected-is-not-called
+			spinnerPrevSelection = position;
+			return;
+		} 		
+		spinnerPrevSelection = position;
+		//Log.i (getClass().getSimpleName()+" onItemSelected", "pos/prevSelection:"+position+"/"+spinnerPrevSelection);
+		
 		switch (parent.getId()) {
 		case R.id.challengesSpinner: {
 			dropdownSelection = (String) parent.getItemAtPosition(position);
 			if (dropdownSelection.startsWith(SENTINAL)) {
-				Log.i (getClass().getName(),"sel=0 cancel Challenge....");
+				Log.i (getClass().getSimpleName()+" onItemSelected","sel=0 cancel Challenge....");
 				cancelAdd();
 			} else {
 
 				Pun finishedPun = (Pun)editableChallenge.getTag(CHALLENGE_PUN);
-				if (finishedPun == null) {
-					// weird spinner event upon initialization
-					//http://stackoverflow.com/questions/5624825/spinner-onitemselected-executes-when-it-is-not-suppose-to/5918177#5918177
-					Log.i(this.getClass().getCanonicalName(),"onItemSelected () ignored....");
-                    return;
-				}
-				Log.i(this.getClass().getCanonicalName(),"onItemSelected () selected challenged editable part");
+				if (finishedPun == null) throw new RuntimeException("null finsihed pun");
+				Log.i (getClass().getSimpleName()+" onItemSelected","selected challenged editable part");
 				cancelAdd();
 				editableChallenge.setTag(null);//clear cache
 				finishedPun.setAdverb(dropdownSelection);
@@ -258,21 +261,21 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener {
 				finishedPun.setAuthor(finishedPun.getAuthor());
 				finishedPun.setCreated(Pun.NOW);
 			    puns.add(0, finishedPun);
-			    ChallengesProvider.getInstance().disqualify(finishedPun.getCreatedTimeSeconds()); 
+			    ChallengesProvider.getInstance(getApplicationContext()).disqualify(finishedPun.getCreatedTimeSeconds()); 
 				adapter.notifyDataSetChanged();
 			}
 			break;
 		}
 		default: {
-			assert false: "Invalid View id.";
-		break;
+			throw new RuntimeException("Invalid View id.");
 		}
 		}
+		spinnerPrevSelection = -1;
 	}
 
 	@Override
 	public void onNothingSelected(AdapterView<?> parent) {
-		assert false :"todo";
+		throw new RuntimeException("todo");
 	}
 	
 }

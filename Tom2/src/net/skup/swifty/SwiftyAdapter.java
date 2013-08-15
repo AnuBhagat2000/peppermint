@@ -2,7 +2,7 @@ package net.skup.swifty;
 
 import java.util.List;
 
-import net.skup.R;
+import net.skup.swifty.R;
 import net.skup.swifty.model.Pun;
 import android.app.Activity;
 import android.util.Log;
@@ -67,7 +67,7 @@ public class SwiftyAdapter extends ArrayAdapter<Pun> {
 				final EditText stmt = (EditText) v;
 
 				String strValue = stmt.getText().toString();
-				Log.i(this.getClass().getName(), "User set EditText value to " + strValue +" pos: "+position);
+				Log.i(getClass().getSimpleName()+" getView","User set EditText value to " + strValue +" pos: "+position);
 			}
 		});
 		return view;

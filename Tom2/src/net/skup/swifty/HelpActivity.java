@@ -1,10 +1,7 @@
 package net.skup.swifty;
 
-import net.skup.R;
-import net.skup.R.layout;
-import net.skup.R.menu;
-import android.os.Bundle;
 import android.app.Activity;
+import android.os.Bundle;
 import android.view.Menu;
 
 public class HelpActivity extends Activity {

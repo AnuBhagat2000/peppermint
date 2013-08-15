@@ -118,18 +118,16 @@ public class Pun {
 		List<Pun> swiftys = new ArrayList<Pun>();
 		try {
 			JSONObject json = new JSONObject(data);
-			// Getting Array of swiftys
 			JSONArray s = json.getJSONArray(SWTAG);
-
 			for (int i = 0; i < s.length(); i++){
 				JSONObject c = s.getJSONObject(i);
 				Pun p = new Pun( c.getString(Pun.T.created.name()), c.getString(Pun.T.author.name()),
 						c.getString(Pun.T.stmt.name()),c.getString(Pun.T.adverb.name()),c.getString(Pun.T.subject.name()));
 				swiftys.add(p);
 			}
-			Log.i(Pun.class.getName(),  "Number of entries " + swiftys.size());
+			Log.i(Pun.class.getSimpleName()+" deserializeJson","Number of entries " + swiftys.size());
 		} catch (Exception e) {
-			Log.e(Pun.class.getName(),"Could not parse json."+ e.getMessage()+" successful entries " + swiftys.size());
+			Log.i(Pun.class.getSimpleName()+" deserializeJson","Could not parse json."+ e.getMessage()+" successful entries " + swiftys.size());
 		}	
 		return swiftys;
 	}

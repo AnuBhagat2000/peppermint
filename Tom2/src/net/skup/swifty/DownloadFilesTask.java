@@ -6,6 +6,7 @@ import java.net.URL;
 
 import net.skup.swifty.model.Pun;
 import android.os.AsyncTask;
+import android.util.Log;
 
 /*
  * Strict Mode produces Network On Main exception w/out this permit all
@@ -31,10 +32,13 @@ public class DownloadFilesTask extends AsyncTask<String, Void, String> {
         int count = urls.length;
         String rv = null;
         for (int i = 0; i < count; i++) {
-        	InputStream web_is = getDataWithURL("http://tom-swifty.appspot.com/challenges.json");
+        	InputStream web_is = getDataWithURL(urls[i]);
+            if (isCancelled()) break; // Escape early if cancel() is called
+            if (web_is == null) {
+        		Log.i(getClass().getSimpleName()+" doInBackground","null return for URL:"+ urls[i]);
+            	break;
+            }
             rv = Pun.convertToString(web_is);
-            // Escape early if cancel() is called
-            if (isCancelled()) break;
         }
         return rv;
     }

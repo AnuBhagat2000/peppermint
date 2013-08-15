@@ -5,7 +5,7 @@
         android:icon="@drawable/addswifty2"
         android:showAsAction="always|withText"
         android:title="@string/challenge"/>
-     <item
+    <item
         android:id="@+id/helpMenuItem"
         android:icon="@drawable/helpoptionmenu"
         android:showAsAction="never"

@@ -8,26 +8,28 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import net.skup.R;
+import net.skup.swifty.R;
 import net.skup.swifty.DownloadFilesTask;
 import net.skup.swifty.DownloadFilesTask.Downloader;
 import android.app.Activity;
+import android.content.Context;
 import android.util.Log;
 
 public class ChallengesProvider extends Activity implements Downloader {
 
-	private Set<Pun> challenges = new HashSet<Pun>();
+	private List<Pun> challenges = new ArrayList<Pun>();
     private Set<Long> blacklist = new HashSet<Long>();//used up
 	private int limit = 100;
 	public static final String challengesURL = "http://tom-swifty.appspot.com/challenges.json";
-
+    private static Context applicationContext;
     
 	private static ChallengesProvider instance = null;
 	private ChallengesProvider() {
 	}
 	
-	public static ChallengesProvider getInstance() {
+	public static ChallengesProvider getInstance(Context a) {
 		if (instance == null) {
+			applicationContext = a;
 			instance = new ChallengesProvider();
 		}
 		return instance;
@@ -69,10 +71,10 @@ public class ChallengesProvider extends Activity implements Downloader {
      * @return a list of challenges or null upon error
      */
 	public ChallengeBlock getChallenge(int max, String sentinal) {
-		Log.i(getClass().getName(),"getChallenge: challenges:"+challenges.size() +" blacklist:"+blacklistSize());
-
+		
+		Log.i(getClass().getSimpleName()+" getChallenge ", "challenges.size:"+challenges.size() +" blacklist-size:"+blacklistSize());
 		if (challenges.size() <= 0) {
-			fetchSynchronously(max);
+			challenges = fetchSynchronously(max);
 			if (challenges.size() <= 0) {
 				Log.e(getClass().getName(),"getChallenge: could not get challenges, even fallback data.");
                 return null;
@@ -117,24 +119,33 @@ public class ChallengesProvider extends Activity implements Downloader {
 	}
 
 	/** Fallback data.*/
+	// ApplicationContext vs ActivityContext
+	//http://stackoverflow.com/questions/4391720/how-can-i-get-a-resource-content-from-a-static-context
+	//http://stackoverflow.com/questions/3572463/what-is-context-in-android
+	//http://stackoverflow.com/questions/5498669/android-needing-context-in-non-activity-classes
+	//http://stackoverflow.com/questions/9239462/difference-applicationcontext-vs-activity-context-in-android
+	//http://https417.blogspot.com/2013/04/activity-independent-asynctasks.html
+	// There are two easy ways to avoid context-related memory leaks. The most obvious one is to avoid escaping the context outside of its own scope. ...  The second solution is to use the Application context. This context will live as long as your application is alive and does not depend on the activities life cycle. If you plan on keeping long-lived objects that need a context, remember the application object. You can obtain it easily by callingContext.getApplicationContext() or Activity.getApplication().
+	//http://android-developers.blogspot.com/2009/01/avoiding-memory-leaks.html
 	List<Pun> fetchSynchronously(int max) {
     	List<Pun> challengesSych = new ArrayList<Pun>();
-		InputStream fis = getResources().openRawResource(R.raw.challenges);
+    	if (applicationContext == null) throw new RuntimeException("no context");
+		InputStream fis = applicationContext.getResources().openRawResource(R.raw.challenges);
 		String stringified = Pun.convertToString(fis);
 		challengesSych = Pun.deserializeJson(stringified);
-		Log.i(getClass().getName(), "fetchSynchronously:: challenges.size"+ challengesSych.size());
+		Log.i(getClass().getSimpleName()+" fetchSynchronously","got fallbk challenges.size"+ challengesSych.size());
 		return challengesSych;
 	}
 		
 	public void fetch(int max) {
 		limit = max;
-		new DownloadFilesTask(this).execute(new String[] {challengesURL+"ff"});
+		new DownloadFilesTask(this).execute(new String[] {challengesURL});
 	}
 
 	@Override
 	public void setData(String data) {
 		List<Pun> newPuns = Pun.deserializeJson(data);
-		Log.i(getClass().getName(), "setData Puns.size/blacklist size"+ newPuns.size() +"/"+blacklist.size());
+		Log.i(getClass().getSimpleName()+" setData","Puns.size/blacklist size"+ newPuns.size() +"/"+blacklist.size());
 
 		for (Pun p : newPuns) {
 			//TODO do not add redundant
@@ -143,7 +154,6 @@ public class ChallengesProvider extends Activity implements Downloader {
 			}
 			if (challenges.size() >= limit) break;
 		}
-		Log.i(getClass().getName(), "setData challenges.size"+ challenges.size());
-
+		Log.i(getClass().getSimpleName()+" setData","challenges.size"+ challenges.size());
 	}
 }
