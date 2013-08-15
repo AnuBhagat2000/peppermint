@@ -10,7 +10,7 @@
     <string name="substitueSubjectKey">SUBJ</string>
     <string name="defaultSubject">LittleTom</string>
     <string name="help">Help</string>
-    <string name="bookcoverCaption">A Tom Swifty is a A type of word play in which there is a punning relationship between an adverb and the statement it refers to. The name comes from the Tom Swift series of books where the scientist hero Tom Swifty undergoes adventures involving rocket ships, ray-guns and other things he had invented.</string>
+    <string name="bookcoverCaption">A Tom Swifty is a type of word play in which there is a punning relationship between an adverb and the statement it refers to. The name comes from the Tom Swift series of books where the scientist hero Tom Swifty undergoes adventures involving rocket ships, ray-guns and other things he had invented.</string>
     <string name="title_activity_help">HelpActivity</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>

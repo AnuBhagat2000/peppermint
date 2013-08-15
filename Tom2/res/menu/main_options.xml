@@ -2,19 +2,19 @@
 
     <item
         android:id="@+id/challenge"
-        android:icon="@drawable/addswifty2"
-        android:showAsAction="always|withText"
+        android:icon="@drawable/addswifty32x32h"
+        android:showAsAction="ifRoom|withText"
         android:title="@string/challenge"/>
     <item
         android:id="@+id/helpMenuItem"
         android:icon="@drawable/helpoptionmenu"
-        android:showAsAction="never"
+        android:showAsAction="ifRoom"
         android:title="@string/help"/>
     <item
         android:id="@+id/settings"
         android:icon="@drawable/darkactionsettings"
         android:orderInCategory="100"
-        android:showAsAction="never"
+        android:showAsAction="ifRoom"
         android:title="@string/settingsTitle"/>
 
 </menu>

@@ -1,4 +1,4 @@
-
+Internal Readme
 
 setup data
 ============
@@ -76,12 +76,6 @@ enter email then the passw to
 
 http://tom-swifty.appspot.com  ##this is the guestbook app
 http://tom-swifty.appspot.com/challenges.json
-
-
-Overview
-========
-Challenges via mult choice 
-or via text input
 
 
 DATA
