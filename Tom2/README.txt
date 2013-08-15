@@ -58,7 +58,7 @@ Email: ir.smith99@gmail.com
 Password for ir.smith99@gmail.com: ### enter pw from yellow box here 
 
 com.google.appengine.tools.admin.ClientLoginServerConnection$ClientLoginException: Use an application-specific password instead of your regular account password. 
-See http://www.google.com/support/accounts/bin/answer.py?answer=185833
+http://www.google.com/support/accounts/bin/answer.py?answer=185833
 Unable to update app: Use an application-specific password instead of your regular account password. See http://www.google.com/support/accounts/bin/answer.py?answer=185833
 Please see the logs [/var/folders/tj/tdh3l01x633dr9j3ztmd0601_79p0f/T/appcfg558534912804139142.log] for further information.
 

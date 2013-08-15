@@ -15,7 +15,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
 
-public class ChallengesProvider extends Activity implements Downloader {
+public class ChallengesProvider implements Downloader {
 
 	private List<Pun> challenges = new ArrayList<Pun>();
     private Set<Long> blacklist = new HashSet<Long>();//used up

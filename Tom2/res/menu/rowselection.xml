@@ -4,6 +4,6 @@
 <item
         android:id="@+id/menuitem1_show"
         android:title="@string/deleteSwifty"
-        android:icon="@drawable/deleteswifty32x32h"/>
+        android:icon="@drawable/deleteswifty32x32"/>
 
 </menu>
