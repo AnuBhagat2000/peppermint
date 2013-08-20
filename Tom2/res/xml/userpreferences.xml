@@ -8,4 +8,10 @@
         android:summary="Your Name"
         android:title="Your Name" />
 
+     <CheckBoxPreference
+          android:title="Say Swifty Sound Enabled"
+          android:defaultValue="true"
+          android:summary="Allow sound for Say Swifty"
+          android:key="saySwiftyPref" />
+     
 </PreferenceScreen>
