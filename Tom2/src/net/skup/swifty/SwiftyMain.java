@@ -3,6 +3,7 @@ package net.skup.swifty;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import net.skup.swifty.model.ChallengesProvider;
 import net.skup.swifty.model.ChallengesProvider.ChallengeBlock;
@@ -11,7 +12,10 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.CheckBoxPreference;
+import android.preference.Preference;
 import android.preference.PreferenceManager;
+import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.ActionMode;
 import android.view.Menu;
@@ -28,13 +32,14 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class SwiftyMain extends Activity implements OnItemSelectedListener {
+public class SwiftyMain extends Activity implements OnItemSelectedListener, TextToSpeech.OnInitListener {
 
 	private ListView mainListView;
 	private ViewGroup editableChallenge;
 	private Spinner editablePart;
 	private TextView nonEditablePart;
 	private List<Pun> puns = new ArrayList<Pun>();
+	private boolean saySwiftyPref = true;
 	private static final String SENTINAL = "Select One (or nothing to Cancel)";
     public static final int CHALLENGE_PUN = R.id.challenge;
 	private SwiftyAdapter adapter;
@@ -42,7 +47,9 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener {
 	private Object mActionMode;
 	private int longClickItem = -1;
 	private int spinnerPrevSelection = -1;
-	
+	private int MY_DATA_CHECK_CODE = -99;
+	private TextToSpeech mTts; 
+
 	
 	/* Contextual Action Bar (CAB) is the visual for Contextual Action Mode. It overlays the action bar. 
 	 * http://www.vogella.com/articles/AndroidListView/article.html#listview_actionbar
@@ -61,10 +68,18 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener {
 		@Override
 		public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
 			switch (item.getItemId()) {
-			case R.id.menuitem1_show:
+			case R.id.deleteMenuitem: {
+				
 				deleteSwifty(longClickItem);
 				mode.finish();// Action picked, so close the CAB
 				return true;
+			}
+			case R.id.sayitMenuitem:{
+				
+				saySwifty(longClickItem);
+				mode.finish();
+				return true;
+			}
 			default:
 				return false;
 			}
@@ -110,6 +125,16 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener {
 		        return true;
 		      }
 		    });
+
+		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+	    saySwiftyPref = sharedPrefs.getBoolean("saySwiftyPref", true);
+		Log.i(getClass().getSimpleName(),"sound pref:"+saySwiftyPref);
+
+		mTts = new TextToSpeech(this, this);
+		Intent checkIntent = new Intent(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA); 
+		startActivityForResult(checkIntent, MY_DATA_CHECK_CODE);
+		Log.i(getClass().getSimpleName(),"sent intent for Text to speech engine");		
+
 	}
 
 	/** Get the latest challenges data. */
@@ -153,12 +178,17 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener {
 		editor.putString(Pun.SWTAG, Pun.jsonStringify(puns)); 
 		editor.commit();
 		Log.i(getClass().getSimpleName()+" onPause","persisting Puns");
+		
 	}
 	
 	@Override 
 	protected void onStop() {
 		super.onStop();
 		Log.i(getClass().getSimpleName()+" onStop","onStop");
+		if (mTts != null) {
+			mTts.stop();
+			mTts.shutdown();
+		}
 	}
 	 
 	@Override
@@ -193,6 +223,17 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener {
 		return true;
 	}
 
+	private void saySwifty(final int index) {
+
+		if (true/*saySwiftyPref*/) {
+			StringBuilder sb = new StringBuilder(puns.get(index).getStmt());
+			sb.append(puns.get(index).getAdverb());
+			mTts.speak(sb.toString(), TextToSpeech.QUEUE_ADD, null);//or QUUE_FLUSH
+		} else {
+			Log.i(getClass().getSimpleName()+" saySwifty","saySwifty:"+saySwiftyPref);
+		}
+		
+	}
 	
 	private void deleteSwifty(final int index) {
 		mainListView.animate().setDuration(2000).alpha(0).withEndAction(new Runnable() {
@@ -255,6 +296,7 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener {
 				cancelAdd();
 				editableChallenge.setTag(null);//clear cache
 				finishedPun.setAdverb(dropdownSelection);
+				
 				//chString defaultIfJustInstalled = getString(R.string.defaultSubject);
 			    //String author = myDefaultSP.getString(getString(R.string.substitueSubjectKey), defaultIfJustInstalled); if EditText
 
@@ -276,6 +318,30 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener {
 	@Override
 	public void onNothingSelected(AdapterView<?> parent) {
 		throw new RuntimeException("todo");
+	}
+	
+	@Override
+	protected void onActivityResult( int requestCode, int resultCode, Intent data) { 
+		
+		if (requestCode == MY_DATA_CHECK_CODE) {
+				if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) {
+					Log.i(getClass().getSimpleName(),"onActivityResult Text to speech engine exists SUCCESS");		
+					mTts = new TextToSpeech(this, this);
+				} else {
+					Log.i(getClass().getSimpleName(),"onActivityResult Text to speech engine needs installation");		
+					Intent installIntent = new Intent(); installIntent.setAction(
+							TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA); startActivity(installIntent);
+				} }
+	}
+
+	@Override
+	public void onInit(int status) {
+		if (status == TextToSpeech.SUCCESS) {
+			Log.i(getClass().getSimpleName(),"Text to speech engine finished SUCCESS");		
+			mTts.setLanguage(Locale.US);
+		}
+		else
+			Log.i(getClass().getSimpleName(),"Text to speech engine failed");		
 	}
 	
 }
