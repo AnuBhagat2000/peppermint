@@ -8,12 +8,14 @@ import java.util.Locale;
 import net.skup.swifty.model.ChallengesProvider;
 import net.skup.swifty.model.ChallengesProvider.ChallengeBlock;
 import net.skup.swifty.model.Pun;
+
+import org.apache.http.protocol.HTTP;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
-import android.preference.CheckBoxPreference;
-import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
@@ -58,7 +60,7 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener, Text
 		@Override
 		public boolean onCreateActionMode(ActionMode mode, Menu menu) {
 			MenuInflater inflater = mode.getMenuInflater();
-			inflater.inflate(R.menu.rowselection, menu);
+			inflater.inflate(R.menu.context_menu, menu);
 			return true;
 		}
 		@Override
@@ -69,14 +71,20 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener, Text
 		public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
 			switch (item.getItemId()) {
 			case R.id.deleteMenuitem: {
-				
+
 				deleteSwifty(longClickItem);
 				mode.finish();// Action picked, so close the CAB
 				return true;
 			}
 			case R.id.sayitMenuitem:{
-				
+
 				saySwifty(longClickItem);
+				mode.finish();
+				return true;
+			}
+			case R.id.emailMenuitem:{
+
+				emailSwifty(longClickItem);
 				mode.finish();
 				return true;
 			}
@@ -84,6 +92,7 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener, Text
 				return false;
 			}
 		}
+		
 		@Override
 		public void onDestroyActionMode(ActionMode mode) {
 			mActionMode = null;
@@ -235,6 +244,20 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener, Text
 		
 	}
 	
+	private void emailSwifty(final int index) {
+		Log.i(getClass().getSimpleName()+" emailSwifty","emailSwifty:");
+		StringBuilder sb = new StringBuilder(puns.get(index).getStmt());
+		sb.append(" ");
+		sb.append(puns.get(index).getAdverb());
+
+		Intent email = new Intent(Intent.ACTION_SEND);
+		email.setType("message/rfc822");
+		email.putExtra(Intent.EXTRA_EMAIL, new String[] {"ir.smith@sbcglobal.net"}); // victim (err... recipient) of email
+		email.putExtra(Intent.EXTRA_SUBJECT, "a Tom Swifty from Irene"); 
+		email.putExtra(Intent.EXTRA_TEXT, sb.toString()+"\n\n\n\n\n"+"from Tom Swifty android app.  https://github.com/irsmith/peppermint"); 
+		startActivity(Intent.createChooser(email, "Choose an Email client :"));
+	}
+	
 	private void deleteSwifty(final int index) {
 		mainListView.animate().setDuration(2000).alpha(0).withEndAction(new Runnable() {
 			@Override
@@ -246,10 +269,6 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener, Text
 		});
 	}
 	
-	private void cancelAdd() {
-		editableChallenge.setVisibility(View.GONE);
-	}
-
 	/** Start a challenge edit. */
 	private void startingChallenge() {
 
@@ -258,15 +277,21 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener, Text
 			Toast.makeText(getApplicationContext(), "No challenges available.", Toast.LENGTH_LONG).show();
 			return;
 		}
-		editableChallenge.setVisibility(View.VISIBLE);
-		editableChallenge.requestFocus();
-
 		Pun newPun = b.pun;
 		editableChallenge.setTag(CHALLENGE_PUN, newPun);// attach the fully defined pun for use after finished editing
 		nonEditablePart.setText(newPun.getStmt());
 		ArrayAdapter<String> challengesAdapter = new ArrayAdapter<String> (this, android.R.layout.simple_spinner_item, b.candidates);
 		editablePart.setAdapter(challengesAdapter);
 		challengesAdapter.notifyDataSetChanged();
+		
+		mainListView.animate().setDuration(1000).alpha(0).withEndAction(new Runnable() {
+			@Override
+			public void run() {
+				editableChallenge.setVisibility(View.VISIBLE);
+				editableChallenge.requestFocus();
+				mainListView.setAlpha(1);
+			}
+		});
 	}
 
 	/** Finished editing Challenge.*/
@@ -274,7 +299,7 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener, Text
 	public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 
 		if (spinnerPrevSelection < 0 || spinnerPrevSelection == position) {
-			Log.i (getClass().getSimpleName()+" onItemSelected", "filter, pos/prevSelection:"+position+"/"+spinnerPrevSelection);
+			Log.i (getClass().getSimpleName()+" onItemSelected TOP", "filter, pos/prevSelection:"+position+"/"+spinnerPrevSelection);
 			//http://stackoverflow.com/questions/8321251/why-onnothingselected-is-not-called
 			spinnerPrevSelection = position;
 			return;
@@ -286,25 +311,25 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener, Text
 		case R.id.challengesSpinner: {
 			dropdownSelection = (String) parent.getItemAtPosition(position);
 			if (dropdownSelection.startsWith(SENTINAL)) {
-				Log.i (getClass().getSimpleName()+" onItemSelected","sel=0 cancel Challenge....");
-				cancelAdd();
+				Log.i (getClass().getSimpleName()+" onItemSelected-SENTINAL","sel=0 cancel Challenge....");
+				dismissEditItemView();
 			} else {
 
-				Pun finishedPun = (Pun)editableChallenge.getTag(CHALLENGE_PUN);
+				final Pun finishedPun = (Pun)editableChallenge.getTag(CHALLENGE_PUN);
 				if (finishedPun == null) throw new RuntimeException("null finsihed pun");
 				Log.i (getClass().getSimpleName()+" onItemSelected","selected challenged editable part");
-				cancelAdd();
 				editableChallenge.setTag(null);//clear cache
 				finishedPun.setAdverb(dropdownSelection);
-				
+
 				//chString defaultIfJustInstalled = getString(R.string.defaultSubject);
-			    //String author = myDefaultSP.getString(getString(R.string.substitueSubjectKey), defaultIfJustInstalled); if EditText
+				//String author = myDefaultSP.getString(getString(R.string.substitueSubjectKey), defaultIfJustInstalled); if EditText
 
 				finishedPun.setAuthor(finishedPun.getAuthor());
 				finishedPun.setCreated(Pun.NOW);
-			    puns.add(0, finishedPun);
-			    ChallengesProvider.getInstance(getApplicationContext()).disqualify(finishedPun.getCreatedTimeSeconds()); 
+				ChallengesProvider.getInstance(getApplicationContext()).disqualify(finishedPun.getCreatedTimeSeconds()); 
+				puns.add(0, finishedPun);
 				adapter.notifyDataSetChanged();
+				editableChallenge.setVisibility(View.GONE);
 			}
 			break;
 		}
@@ -313,6 +338,16 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener, Text
 		}
 		}
 		spinnerPrevSelection = -1;
+	}
+
+	private void dismissEditItemView() {
+		mainListView.animate().setDuration(1000).alpha(0).withEndAction(new Runnable() {
+			@Override
+			public void run() {
+				editableChallenge.setVisibility(View.GONE);
+				mainListView.setAlpha(1);
+			}
+		});
 	}
 
 	@Override

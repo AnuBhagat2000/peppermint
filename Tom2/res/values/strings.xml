@@ -3,7 +3,6 @@
 
     <string name="app_name">Tom Swifty</string>
     <string name="challenge">Challenge Me</string>
-    <string name="deleteSwifty">Delete Swifty</string>
     <string name="settingsTitle">Settings</string>
     <string name="substitueSubjectKey">SUBJ</string>
     <string name="defaultSubject">LittleTom</string>
@@ -12,5 +11,7 @@
     <string name="title_activity_help">HelpActivity</string>
     <string name="action_settings">Settings</string>
     <string name="sayIt">Say Swifty</string>
+    <string name="emailSwifty">Email Swifty</string>
+    <string name="deleteSwifty">Delete Swifty</string>
 
 </resources>

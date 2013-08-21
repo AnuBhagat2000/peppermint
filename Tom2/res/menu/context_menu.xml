@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/emailMenuitem"
+        android:icon="@drawable/ic_emailswifty"
+        android:title="@string/emailSwifty"/>
+    <item
+        android:id="@+id/sayitMenuitem"
+        android:checked="true"
+        android:icon="@drawable/ic_sayswifty"
+        android:title="@string/sayIt"/>
+    <item
+        android:id="@+id/deleteMenuitem"
+        android:icon="@drawable/deleteswifty32x32"
+        android:title="@string/deleteSwifty"/>
+
+</menu>
