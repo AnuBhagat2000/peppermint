@@ -50,22 +50,18 @@ public class Pun {
 
 	}
 
-	public String getCreated() {
+	public String getFormattedCreationTime() {
 		if (formattedCreationTime == null || formattedCreationTime.isEmpty()) {
 			formattedCreationTime = Long.toString(createdTimeSeconds);
 		}
 		return formattedCreationTime;
 	}
 
-	public long getCreatedTimeSeconds() {
-		if (createdTimeSeconds == -1) {
-			//
-			createdTimeSeconds = 1000;// TODO convert from created string formatted time to long
-		}
-		return createdTimeSeconds;
+	public String getKey() {
+		return stmt;
 	}
 
-	public void setCreated(String created) {
+	public void setFormattedCreationTime(String created) {
 		if (created.equals(NOW)) {
 			createdTimeSeconds = System.currentTimeMillis() / 1000;
 			formattedCreationTime = sdf.format(createdTimeSeconds * 1000);

@@ -37,13 +37,18 @@ Uploading your App to Google
 2) Make sure that the application identifier in your appengine-web.xml file
    matches the one you chose in step 1.
 
-3) Run appcfg to upload your application to deploy your application to
-   Google's Servers:
-
+3) Run appcfg to upload your application to deploy your application to Google's Servers:
+3a)
+http://www.google.com/support/accounts/bin/answer.py?answer=185833
+3b)
    From the appengine-java-sdk directory, run:
-     bin\appcfg.cmd update <your web application>
      bin/appcfg.sh update demos/guestbook/war
 
+  --no_cookies          Do not save/load access credentials to/from disk.
+
+ --retain_upload_dir
+                        Do not delete temporary (staging) directory used in
+                        uploading.
 this is the URL
 http://tom-swifty.appspot.com/sample.json
 http://tom-swifty.appspot.com/challenges.json

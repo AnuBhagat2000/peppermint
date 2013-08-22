@@ -57,10 +57,10 @@ public class SwiftyAdapter extends ArrayAdapter<Pun> {
 		}
 		
 		ViewHolder holder = (ViewHolder) view.getTag(); // get all subviews
-		holder.time.setText(puns.get(position).getCreated());
+		holder.time.setText(puns.get(position).getFormattedCreationTime());
 		holder.author.setText(puns.get(position).getAuthor());
-		holder.statement.setText(puns.get(position).getStmt()); //"I want a martini."
-		holder.adverb.setText(puns.get(position).getAdverb()); //TODO substitute subject "[Tom] said dryly"
+		holder.statement.setText(puns.get(position).getStmt()); //I want a martini.
+		holder.adverb.setText(puns.get(position).getAdverb()); //Tom said dryly"
 		holder.statement.setOnFocusChangeListener(new OnFocusChangeListener() {
 			public void onFocusChange(View v, boolean hasFocus) {
 				final int position = v.getId();

@@ -8,17 +8,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import net.skup.swifty.R;
 import net.skup.swifty.DownloadFilesTask;
 import net.skup.swifty.DownloadFilesTask.Downloader;
-import android.app.Activity;
+import net.skup.swifty.R;
 import android.content.Context;
 import android.util.Log;
 
 public class ChallengesProvider implements Downloader {
 
 	private List<Pun> challenges = new ArrayList<Pun>();
-    private Set<Long> blacklist = new HashSet<Long>();//used up
+    private Set<String> blacklist = new HashSet<String>();
 	private int limit = 100;
 	public static final String challengesURL = "http://tom-swifty.appspot.com/challenges.json";
     private static Context applicationContext;
@@ -44,13 +43,13 @@ public class ChallengesProvider implements Downloader {
 	}
 	
 	/** Disqualify or consume a pun. */
-    public void disqualify(long id) {
+    public void disqualify(String id) {
     	Iterator<Pun> it = challenges.iterator();
     	boolean found = false;
     	Pun p = null;
         while (it.hasNext()) { 
         	p = (Pun) it.next();
-        	if (p.getCreatedTimeSeconds() == id) {
+        	if (p.getKey() == id) {
         		found = true;
         		break;
         	}
@@ -83,13 +82,14 @@ public class ChallengesProvider implements Downloader {
         
 		List<String> adverbs = new ArrayList<String>(max);
 		Pun challengePun = null;
+		Collections.shuffle(challenges);
 		
-		// find a qualified challenge and its correct answer
+		// find a qualified challenge and its correct answer 
 		Iterator<Pun> it = challenges.iterator();
 		if (it.hasNext()) {
 			do {
 				challengePun = it.next();
-			} while (!blacklist.isEmpty() &&  blacklist.contains(challengePun.getCreatedTimeSeconds()));
+			} while (!blacklist.isEmpty() &&  blacklist.contains(challengePun.getKey()));
 		}
 		adverbs.add(challengePun.getAdverb());
 
@@ -99,7 +99,7 @@ public class ChallengesProvider implements Downloader {
 		while (it.hasNext() && (adverbs.size() < max)) {
 			challengePun = it.next();
 			if (adverbs.contains(challengePun.getAdverb())) continue;
-			if (blacklist.contains(challengePun)) continue;
+			if (blacklist.contains(challengePun.getKey())) continue;
 			adverbs.add(challengePun.getAdverb());
 		}
 		
@@ -118,15 +118,7 @@ public class ChallengesProvider implements Downloader {
 		}
 	}
 
-	/** Fallback data.*/
-	// ApplicationContext vs ActivityContext
-	//http://stackoverflow.com/questions/4391720/how-can-i-get-a-resource-content-from-a-static-context
-	//http://stackoverflow.com/questions/3572463/what-is-context-in-android
-	//http://stackoverflow.com/questions/5498669/android-needing-context-in-non-activity-classes
-	//http://stackoverflow.com/questions/9239462/difference-applicationcontext-vs-activity-context-in-android
-	//http://https417.blogspot.com/2013/04/activity-independent-asynctasks.html
-	// There are two easy ways to avoid context-related memory leaks. The most obvious one is to avoid escaping the context outside of its own scope. ...  The second solution is to use the Application context. This context will live as long as your application is alive and does not depend on the activities life cycle. If you plan on keeping long-lived objects that need a context, remember the application object. You can obtain it easily by callingContext.getApplicationContext() or Activity.getApplication().
-	//http://android-developers.blogspot.com/2009/01/avoiding-memory-leaks.html
+	/** Fetch fallback data, synchronously from a file.*/
 	List<Pun> fetchSynchronously(int max) {
     	List<Pun> challengesSych = new ArrayList<Pun>();
     	if (applicationContext == null) throw new RuntimeException("no context");
@@ -142,30 +134,30 @@ public class ChallengesProvider implements Downloader {
 		new DownloadFilesTask(this).execute(new String[] {challengesURL});
 	}
 
+
+	/**
+	 * Callback from data fetcher. 
+	 * Uses the blacklist to prevent addition of redundant or used data.
+	 */
 	@Override
 	public void setData(String data) {
 		List<Pun> newPuns = Pun.deserializeJson(data);
-		for (Pun p : newPuns) {
-			//TODO do not add redundant
-			if ( ! blacklist.contains(p.getCreatedTimeSeconds() )) {
-				Log.i(getClass().getSimpleName()+" setData : ","loading :"+p.getCreatedTimeSeconds());
 
+		for (Pun p : newPuns) {
+			// do not add redundant
+			if ( ! challenges.contains(p.getKey() )) {
+				Log.i(getClass().getSimpleName()+" setData : ","loading :"+p.getKey());
 				challenges.add(p);
 			} else {
-				Log.i(getClass().getSimpleName()+" setData : ","skipping load for :"+p.getCreatedTimeSeconds());
-
+				Log.i(getClass().getSimpleName()+" setData : ","skipping load for :"+p.getKey());
 			}
 			if (challenges.size() >= limit) break;
 		}
-		Log.i(getClass().getSimpleName()+" setData","Puns.size:"+ newPuns.size() +" blacklist.size:"+blacklist.size());
+		Log.i(getClass().getSimpleName()+"setData","challenges.size:"+ challenges.size() +" blacklist.size:"+blacklist.size());
 	}
 
 	public Set<String> getBlacklist() {
-		Set<String>  bl = new HashSet<String>(blacklist.size());
-		for (Long b : blacklist) {
-			bl.add(Long.toString(b));
-		}
-		return bl;
+		return blacklist;
 	}
 
 	public void putBlacklist(Set<String> bl) {
@@ -174,7 +166,7 @@ public class ChallengesProvider implements Downloader {
 		}
 		blacklist.clear();
 		for (String s : bl) {
-			blacklist.add(Long.parseLong(s));
+			blacklist.add(s);
 		}
 	}
 }

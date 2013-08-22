@@ -82,7 +82,7 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener, Text
 			}
 			case R.id.emailMenuitem:{
 
-				emailSwifty(longClickItem);
+				emailSwifty(longClickItem); 
 				mode.finish();
 				return true;
 			}
@@ -168,7 +168,7 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener, Text
         String punCache = sharedPref.getString(Pun.SWTAG, "");
 		Set<String> bl = sharedPref.getStringSet("blacklist", null);
 		ChallengesProvider.getInstance(getApplicationContext()).putBlacklist(bl);
-		Log.i(getClass().getSimpleName()+" onResume","... retrieve... blacklist.size "+ bl.size());
+		Log.i(getClass().getSimpleName()+" onResume","... retrieve... blacklist.size "+ ((bl==null) ? "null": bl.size()));
         if (punCache.isEmpty()) {
     		InputStream fis = getResources().openRawResource(R.raw.sample);
     		if (fis == null) {
@@ -195,11 +195,9 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener, Text
 		//editor.putString(getString(R.string.substitueSubjectKey), substituteSubject);// PreferencesActivity already handles saving its own.
 		editor.putString(Pun.SWTAG, Pun.jsonStringify(puns)); 
 		Set<String> bl = ChallengesProvider.getInstance(getApplicationContext()).getBlacklist();
-		Log.i(getClass().getSimpleName()+" onPause","... persist... blacklist.size"+ bl.size());
+		Log.i(getClass().getSimpleName()+" onPause","... persist... blacklist.size:"+ bl.size());
 		editor.putStringSet("blacklist", bl);
 		editor.commit();
-		Log.i(getClass().getSimpleName()+" onPause","persisting Puns");
-		
 	}
 	
 	@Override 
@@ -308,13 +306,13 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener, Text
 		});
 	}
 
-	/** Finished editing Challenge.*/
+	/** Finished editing Challenge.
+	 * 	http://stackoverflow.com/questions/8321251/why-onnothingselected-is-not-called
+	 */
 	@Override
 	public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 
 		if (spinnerPrevSelection < 0 || spinnerPrevSelection == position) {
-			Log.i (getClass().getSimpleName()+" onItemSelected TOP", "filter, pos/prevSelection:"+position+"/"+spinnerPrevSelection);
-			//http://stackoverflow.com/questions/8321251/why-onnothingselected-is-not-called
 			spinnerPrevSelection = position;
 			return;
 		} 		
@@ -325,7 +323,7 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener, Text
 		case R.id.challengesSpinner: {
 			dropdownSelection = (String) parent.getItemAtPosition(position);
 			if (dropdownSelection.startsWith(SENTINAL)) {
-				Log.i (getClass().getSimpleName()+" onItemSelected-SENTINAL","sel=0");
+				//Log.i (getClass().getSimpleName()+" onItemSelected-SENTINAL","sel=0"); 
 				editableChallenge.setVisibility(View.GONE);
 			} else {
 
@@ -334,13 +332,9 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener, Text
 				Log.i (getClass().getSimpleName()+" onItemSelected","selected challenged editable part");
 				editableChallenge.setTag(null);//clear cache
 				finishedPun.setAdverb(dropdownSelection);
-
-				//chString defaultIfJustInstalled = getString(R.string.defaultSubject);
-				//String author = myDefaultSP.getString(getString(R.string.substitueSubjectKey), defaultIfJustInstalled); if EditText
-
 				finishedPun.setAuthor(finishedPun.getAuthor());
-				finishedPun.setCreated(Pun.NOW);
-				ChallengesProvider.getInstance(getApplicationContext()).disqualify(finishedPun.getCreatedTimeSeconds()); 
+				finishedPun.setFormattedCreationTime(Pun.NOW);
+				ChallengesProvider.getInstance(getApplicationContext()).disqualify(finishedPun.getKey()); 
 				puns.add(0, finishedPun);
 				adapter.notifyDataSetChanged();
 				editableChallenge.setVisibility(View.GONE);
@@ -383,5 +377,4 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener, Text
 		else
 			Log.i(getClass().getSimpleName(),"Text to speech engine failed");		
 	}
-	
 }

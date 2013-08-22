@@ -14,7 +14,6 @@ public class ChallengesProviderTest extends ActivityTestCase {
 		int limit = 10;
 		ChallengesProvider cp =  ChallengesProvider.getInstance(getActivity().getApplicationContext());
 
-
 		cp.fetch(limit); // load up to 10 data entries
 
 		Thread.sleep(6000);
@@ -26,13 +25,13 @@ public class ChallengesProviderTest extends ActivityTestCase {
 		b =	cp.getChallenge(3); // get up to 3
 		Assert.assertEquals(3, b.candidates.size()); 
 		
-		cp.disqualify(b.pun.getCreatedTimeSeconds()); //consume the candidate associated with pun
+		cp.disqualify(b.pun.getKey()); //consume the candidate associated with pun
 		Assert.assertEquals(1, cp.blacklistSize());
 		Assert.assertEquals(9, cp.available());  // smaller number of candidates are now available
 		
 		b =	cp.getChallenge(200); 
 		Assert.assertEquals(9, b.candidates.size()); 
-		cp.disqualify(b.pun.getCreatedTimeSeconds()); 
+		cp.disqualify(b.pun.getKey()); 
 		Assert.assertEquals(8, cp.available()); 
 		Assert.assertEquals(2, cp.blacklistSize());
 		b =	cp.getChallenge(0); 
