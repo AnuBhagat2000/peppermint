@@ -66,7 +66,7 @@ public class ChallengesProvider implements Downloader {
     /**
      * Prepares a set of challenges containing one match of a Pun statement to its adverb and (max - 1) mismatches,
      * If data is not available from the fetch falls back to sample data.  
-     * @param sentinal - if null this is added as the first position in the list 
+     * @param sentinal - if not null this is added as the first position in the list 
      * @param max - the maximum size of the challenge list
      * @return a list of challenges or null upon error
      */
@@ -145,15 +145,36 @@ public class ChallengesProvider implements Downloader {
 	@Override
 	public void setData(String data) {
 		List<Pun> newPuns = Pun.deserializeJson(data);
-		Log.i(getClass().getSimpleName()+" setData","Puns.size/blacklist size"+ newPuns.size() +"/"+blacklist.size());
-
 		for (Pun p : newPuns) {
 			//TODO do not add redundant
-			if ( ! blacklist.contains(p.getCreatedTimeSeconds() /*&& ! (challenges).find(p.getCreatedTimeSeconds())*/)) {
+			if ( ! blacklist.contains(p.getCreatedTimeSeconds() )) {
+				Log.i(getClass().getSimpleName()+" setData : ","loading :"+p.getCreatedTimeSeconds());
+
 				challenges.add(p);
+			} else {
+				Log.i(getClass().getSimpleName()+" setData : ","skipping load for :"+p.getCreatedTimeSeconds());
+
 			}
 			if (challenges.size() >= limit) break;
 		}
-		Log.i(getClass().getSimpleName()+" setData","challenges.size"+ challenges.size());
+		Log.i(getClass().getSimpleName()+" setData","Puns.size:"+ newPuns.size() +" blacklist.size:"+blacklist.size());
+	}
+
+	public Set<String> getBlacklist() {
+		Set<String>  bl = new HashSet<String>(blacklist.size());
+		for (Long b : blacklist) {
+			bl.add(Long.toString(b));
+		}
+		return bl;
+	}
+
+	public void putBlacklist(Set<String> bl) {
+		if (bl == null || bl.size() == 0) {
+			return;
+		}
+		blacklist.clear();
+		for (String s : bl) {
+			blacklist.add(Long.parseLong(s));
+		}
 	}
 }

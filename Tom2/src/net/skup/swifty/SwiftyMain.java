@@ -4,17 +4,14 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import net.skup.swifty.model.ChallengesProvider;
 import net.skup.swifty.model.ChallengesProvider.ChallengeBlock;
 import net.skup.swifty.model.Pun;
-
-import org.apache.http.protocol.HTTP;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
@@ -42,7 +39,7 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener, Text
 	private TextView nonEditablePart;
 	private List<Pun> puns = new ArrayList<Pun>();
 	private boolean saySwiftyPref = true;
-	private static final String SENTINAL = "Select One (or nothing to Cancel)";
+	private static final String SENTINAL = "(Select Your Adverb)";
     public static final int CHALLENGE_PUN = R.id.challenge;
 	private SwiftyAdapter adapter;
     private String dropdownSelection = null;
@@ -51,6 +48,7 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener, Text
 	private int spinnerPrevSelection = -1;
 	private int MY_DATA_CHECK_CODE = -99;
 	private TextToSpeech mTts; 
+	private SharedPreferences prefManager;
 
 	
 	/* Contextual Action Bar (CAB) is the visual for Contextual Action Mode. It overlays the action bar. 
@@ -110,9 +108,7 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener, Text
 		editableChallenge = (ViewGroup)findViewById(R.id.editableChallenge);
 		editablePart = (Spinner)findViewById(R.id.challengesSpinner);
 		nonEditablePart = (TextView)findViewById(R.id.nonEditableChallenge);
-		// If newly installed, and Preference Activity was not run by the user, then the XML defaults won't be
-		// available.  Thus copy defaults from the XML definition to the PreferenceManager. 
-		PreferenceManager.setDefaultValues(this, R.xml.userpreferences, false);
+		initPreferencesManagement();
 		   
 		//editablePart.setOnKeyListener(finishedChallenge);
 		editablePart.setOnItemSelectedListener(this);
@@ -146,6 +142,16 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener, Text
 
 	}
 
+	/**
+	 * If newly installed, and Preference Activity was not run by the user, then the XML defaults won't be
+	 * available.  Copy defaults from the XML definition to the PreferenceManager. 
+	 * http://www.helloandroid.com/tutorials/preferenceactivity-basics
+	 */
+	private void initPreferencesManagement() {
+		PreferenceManager.setDefaultValues(this, R.xml.userpreferences, false);
+		prefManager = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+	}
+
 	/** Get the latest challenges data. */
 	@Override
 	protected void onStart() {
@@ -160,6 +166,9 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener, Text
 
 		SharedPreferences sharedPref = getPreferences(0);
         String punCache = sharedPref.getString(Pun.SWTAG, "");
+		Set<String> bl = sharedPref.getStringSet("blacklist", null);
+		ChallengesProvider.getInstance(getApplicationContext()).putBlacklist(bl);
+		Log.i(getClass().getSimpleName()+" onResume","... retrieve... blacklist.size "+ bl.size());
         if (punCache.isEmpty()) {
     		InputStream fis = getResources().openRawResource(R.raw.sample);
     		if (fis == null) {
@@ -168,7 +177,7 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener, Text
         		throw new RuntimeException(s);
     		}
     		punCache = Pun.convertToString(fis);
-    		Log.i(getClass().getSimpleName()+" onResume","got Puns from sample file.");
+    		Log.i(getClass().getSimpleName()+" onResume","got Puns from sample file");
         } else {
     		Log.i(getClass().getSimpleName()+" onResume","restored Puns from persistence.");
         }
@@ -185,6 +194,9 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener, Text
 		SharedPreferences.Editor editor = uiState.edit();
 		//editor.putString(getString(R.string.substitueSubjectKey), substituteSubject);// PreferencesActivity already handles saving its own.
 		editor.putString(Pun.SWTAG, Pun.jsonStringify(puns)); 
+		Set<String> bl = ChallengesProvider.getInstance(getApplicationContext()).getBlacklist();
+		Log.i(getClass().getSimpleName()+" onPause","... persist... blacklist.size"+ bl.size());
+		editor.putStringSet("blacklist", bl);
 		editor.commit();
 		Log.i(getClass().getSimpleName()+" onPause","persisting Puns");
 		
@@ -233,28 +245,30 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener, Text
 	}
 
 	private void saySwifty(final int index) {
+		boolean  saySwiftyPref = prefManager.getBoolean(getString(R.string.ttsKey),true);
+		Log.i(getClass().getSimpleName()+" saySwifty","sound enabled:"+saySwiftyPref);
 
-		if (true/*saySwiftyPref*/) {
+		if (saySwiftyPref) {
 			StringBuilder sb = new StringBuilder(puns.get(index).getStmt());
 			sb.append(puns.get(index).getAdverb());
 			mTts.speak(sb.toString(), TextToSpeech.QUEUE_ADD, null);//or QUUE_FLUSH
-		} else {
-			Log.i(getClass().getSimpleName()+" saySwifty","saySwifty:"+saySwiftyPref);
-		}
-		
+		} 
 	}
 	
 	private void emailSwifty(final int index) {
-		Log.i(getClass().getSimpleName()+" emailSwifty","emailSwifty:");
+		
+		String  victim = prefManager.getString(getString(R.string.emailRecipientKey),"tom.swifty@goodmail.com");
+		String  owner = prefManager.getString(getString(R.string.substitueSubjectKey),"Tommy Swift");
 		StringBuilder sb = new StringBuilder(puns.get(index).getStmt());
 		sb.append(" ");
 		sb.append(puns.get(index).getAdverb());
-
 		Intent email = new Intent(Intent.ACTION_SEND);
 		email.setType("message/rfc822");
-		email.putExtra(Intent.EXTRA_EMAIL, new String[] {"ir.smith@sbcglobal.net"}); // victim (err... recipient) of email
-		email.putExtra(Intent.EXTRA_SUBJECT, "a Tom Swifty from Irene"); 
-		email.putExtra(Intent.EXTRA_TEXT, sb.toString()+"\n\n\n\n\n"+"from Tom Swifty android app.  https://github.com/irsmith/peppermint"); 
+		email.putExtra(Intent.EXTRA_EMAIL, new String[] {victim}); 
+		email.putExtra(Intent.EXTRA_SUBJECT, "a Tom Swifty from "+owner); 
+		email.putExtra(Intent.EXTRA_TEXT, sb.toString()+"\n\n\n"+"from Tom Swifty android app at https://github.com/irsmith/peppermint"); 
+		Log.i(getClass().getSimpleName()+" emailSwifty","victim:"+victim+" owner: "+owner);
+
 		startActivity(Intent.createChooser(email, "Choose an Email client :"));
 	}
 	
@@ -311,8 +325,8 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener, Text
 		case R.id.challengesSpinner: {
 			dropdownSelection = (String) parent.getItemAtPosition(position);
 			if (dropdownSelection.startsWith(SENTINAL)) {
-				Log.i (getClass().getSimpleName()+" onItemSelected-SENTINAL","sel=0 cancel Challenge....");
-				dismissEditItemView();
+				Log.i (getClass().getSimpleName()+" onItemSelected-SENTINAL","sel=0");
+				editableChallenge.setVisibility(View.GONE);
 			} else {
 
 				final Pun finishedPun = (Pun)editableChallenge.getTag(CHALLENGE_PUN);
@@ -340,15 +354,6 @@ public class SwiftyMain extends Activity implements OnItemSelectedListener, Text
 		spinnerPrevSelection = -1;
 	}
 
-	private void dismissEditItemView() {
-		mainListView.animate().setDuration(1000).alpha(0).withEndAction(new Runnable() {
-			@Override
-			public void run() {
-				editableChallenge.setVisibility(View.GONE);
-				mainListView.setAlpha(1);
-			}
-		});
-	}
 
 	@Override
 	public void onNothingSelected(AdapterView<?> parent) {

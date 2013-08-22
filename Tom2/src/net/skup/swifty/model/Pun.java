@@ -31,20 +31,6 @@ public class Pun {
 	private String stmt;
 	private String adverb;
 
-	public JSONObject getJSONObject() {
-		JSONObject obj = new JSONObject();
-		try {
-			obj.put(T.created.name(), String.valueOf(createdTimeSeconds));
-			obj.put(T.author.name(), author);
-			obj.put(T.subject.name(), subject);
-			obj.put(T.stmt.name(), stmt);
-			obj.put(T.adverb.name(), adverb);
-		} catch (JSONException e) {
-			Log.e(getClass().getName(), "Pun getJSONObject JSONException: "+e.getMessage());
-		}
-		return obj;
-	}
-
 	/**
 	 * 
 	 * @param creationTimeSeconds - eg "123456789" in seconds
@@ -150,6 +136,20 @@ public class Pun {
 			Log.e(Pun.class.getName(), e.getMessage());
 		}
 		return row.toString();
+	}
+	
+	private JSONObject getJSONObject() {
+		JSONObject obj = new JSONObject();
+		try {
+			obj.put(T.created.name(), String.valueOf(createdTimeSeconds));
+			obj.put(T.author.name(), author);
+			obj.put(T.subject.name(), subject);
+			obj.put(T.stmt.name(), stmt);
+			obj.put(T.adverb.name(), adverb);
+		} catch (JSONException e) {
+			Log.e(getClass().getName(), "Pun getJSONObject JSONException: "+e.getMessage());
+		}
+		return obj;
 	}
 	
 	/**

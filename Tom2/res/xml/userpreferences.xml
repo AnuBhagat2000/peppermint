@@ -3,15 +3,20 @@
 
     <EditTextPreference
         android:defaultValue="@string/defaultSubject"
-        android:dialogTitle="Enter User Name"
+        android:dialogTitle="Enter Your Name"
         android:key="@string/substitueSubjectKey"
         android:summary="Your Name"
         android:title="Your Name" />
+    <EditTextPreference
+        android:defaultValue="@string/defaultEmailRecipient"
+        android:dialogTitle="Enter Your Victim (err.. Email Recipient)"
+        android:key="@string/emailRecipientKey"
+        android:summary="Your Email Recipient"
+        android:title="Your Victim" />
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:key="@string/ttsKey"
+        android:summary="Allow sound for Say Swifty"
+        android:title="Say Swifty Sound Enabled" />
 
-     <CheckBoxPreference
-          android:title="Say Swifty Sound Enabled"
-          android:defaultValue="true"
-          android:summary="Allow sound for Say Swifty"
-          android:key="saySwiftyPref" />
-     
 </PreferenceScreen>
